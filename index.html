@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 1.1.5 - Peça Real</title>
+    <title>AeroVision 1.1.5 - Turbina Técnica</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
@@ -17,24 +17,27 @@
 </head>
 <body>
 
-    <button id="btn">CARREGAR COMPONENTE AERO</button>
+    <button id="btn">INICIAR MANUTENÇÃO DA TURBINA</button>
 
     <div class="viewport">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-assets>
-                <a-asset-item id="engine-model" src="https://cdn.aframe.io/test-models/models/glTF-2.0/virtualcity/VC.gltf"></a-asset-item>
-            </a-assets>
-
-            <a-text id="txt-left" value="MANUTENCAO: REPOSICIONE O MOTOR" position="0 0.8 -2" align="center" width="3" color="#FFF"></a-text>
+            <a-text id="txt-left" value="PASSO 1: INSTALE O EIXO DA TURBINA" position="0 0.8 -2" align="center" width="2.5" color="#FFF"></a-text>
             
-            <a-entity id="base-left" gltf-model="#engine-model" position="0.5 -0.2 -2.5" rotation="0 90 0" scale="0.2 0.2 0.2" material="opacity: 0.3; transparent: true"></a-entity>
+            <a-entity id="base-left" position="0.5 -0.2 -2.5" rotation="0 0 90" opacity="0.2">
+                <a-cylinder color="#FFF" height="0.6" radius="0.05" opacity="0.2"></a-cylinder>
+                <a-cylinder color="#FFF" height="0.1" radius="0.2" position="0 0.2 0" opacity="0.2"></a-cylinder>
+            </a-entity>
             
-            <a-entity id="target-left" gltf-model="#engine-model" position="-0.5 0 -2.5" rotation="0 90 0" scale="0.2 0.2 0.2"></a-entity>
+            <a-entity id="target-left" position="-0.5 0 -2.5" rotation="0 0 90">
+                <a-cylinder id="main-part-left" color="#777" height="0.6" radius="0.05"></a-cylinder>
+                <a-cylinder color="#00AAFF" height="0.08" radius="0.18" position="0 0.15 0"></a-cylinder>
+                <a-cylinder color="#333" height="0.08" radius="0.18" position="0 -0.15 0"></a-cylinder>
+            </a-entity>
 
             <a-sphere id="finger-left" radius="0.05" color="red" position="10 10 10"></a-sphere>
             <a-light type="directional" position="1 2 1" intensity="1.5"></a-light>
-            <a-light type="ambient" intensity="0.7"></a-light>
+            <a-light type="ambient" intensity="0.8"></a-light>
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
         </a-scene>
     </div>
@@ -42,80 +45,14 @@
     <div class="viewport" style="border-right: none;">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-text id="txt-right" value="MANUTENCAO: REPOSICIONE O MOTOR" position="0 0.8 -2" align="center" width="3" color="#FFF"></a-text>
-            <a-entity id="base-right" gltf-model="#engine-model" position="0.5 -0.2 -2.5" rotation="0 90 0" scale="0.2 0.2 0.2" material="opacity: 0.3; transparent: true"></a-entity>
-            <a-entity id="target-right" gltf-model="#engine-model" position="-0.5 0 -2.5" rotation="0 90 0" scale="0.2 0.2 0.2"></a-entity>
-            <a-sphere id="finger-right" radius="0.05" color="red" position="10 10 10"></a-sphere>
-            <a-light type="directional" position="1 2 1" intensity="1.5"></a-light>
-            <a-light type="ambient" intensity="0.7"></a-light>
-            <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-        </a-scene>
-    </div>
-
-    <script>
-        // ... (A lógica de JavaScript permanece a mesma da versão anterior, 
-        // apenas garantindo que o seletor 'parts' aponte para o gltf-model)
-        const btn = document.getElementById('btn');
-        const videos = document.querySelectorAll('.webcam');
-        const parts = [document.getElementById('target-left'), document.getElementById('target-right')];
-        const texts = [document.getElementById('txt-left'), document.getElementById('txt-right')];
-        const fingers = [document.getElementById('finger-left'), document.getElementById('finger-right')];
-
-        let partPos = { x: -0.5, y: 0, z: -2.5 };
-        const basePos = { x: 0.5, y: -0.2, z: -2.5 };
-        let isGrabbing = false;
-        let isSnapped = false;
-
-        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
-
-        hands.onResults((results) => {
-            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                const hand = results.multiHandLandmarks[0];
-                const indexTip = hand[8];
-                const thumbTip = hand[4];
-                
-                const posX = (indexTip.x - 0.5) * 3.5; 
-                const posY = (0.5 - indexTip.y) * 2.5;
-                const pinchDist = Math.sqrt(Math.pow(thumbTip.x - indexTip.x, 2) + Math.pow(thumbTip.y - indexTip.y, 2));
-                
-                fingers.forEach(f => f.setAttribute('position', `${posX} ${posY} -2`));
-
-                if (!isSnapped) {
-                    const distToPart = Math.sqrt(Math.pow(posX - partPos.x, 2) + Math.pow(posY - partPos.y, 2));
-                    if (pinchDist < 0.1 && distToPart < 0.5) {
-                        isGrabbing = true;
-                    } else if (isGrabbing) {
-                        const distToBase = Math.sqrt(Math.pow(partPos.x - basePos.x, 2) + Math.pow(partPos.y - basePos.y, 2));
-                        if (distToBase < 0.3) {
-                            isSnapped = true;
-                            partPos = basePos;
-                            parts.forEach(p => p.setAttribute('position', `${basePos.x} ${basePos.y} ${basePos.z}`));
-                            texts.forEach(t => t.setAttribute('value', 'MOTOR INSTALADO COM SUCESSO!'));
-                        }
-                        isGrabbing = false;
-                    }
-
-                    if (isGrabbing) {
-                        partPos.x = posX;
-                        partPos.y = posY;
-                        parts.forEach(p => p.setAttribute('position', `${partPos.x} ${partPos.y} ${partPos.z}`));
-                    }
-                }
-            }
-        });
-
-        async function processFrame() {
-            if (videos[0].readyState >= 2) { await hands.send({image: videos[0]}); }
-            requestAnimationFrame(processFrame);
-        }
-
-        btn.addEventListener('click', async () => {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-            videos.forEach(v => { v.srcObject = stream; v.play(); });
-            btn.style.display = 'none';
-            processFrame();
-        });
-    </script>
-</body>
-</html>
+            <a-text id="txt-right" value="PASSO 1: INSTALE O EIXO DA TURBINA" position="0 0.8 -2" align="center" width="2.5" color="#FFF"></a-text>
+            <a-entity id="base-right" position="0.5 -0.2 -2.5" rotation="0 0 90" opacity="0.2">
+                <a-cylinder color="#FFF" height="0.6" radius="0.05" opacity="0.2"></a-cylinder>
+                <a-cylinder color="#FFF" height="0.1" radius="0.2" position="0 0.2 0" opacity="0.2"></a-cylinder>
+            </a-entity>
+            <a-entity id="target-right" position="-0.5 0 -2.5" rotation="0 0 90">
+                <a-cylinder id="main-part-right" color="#777" height="0.6" radius="0.05"></a-cylinder>
+                <a-cylinder color="#00AAFF" height="0.08" radius="0.18" position="0 0.15 0"></a-cylinder>
+                <a-cylinder color="#333" height="0.08" radius="0.18" position="0 -0.15 0"></a-cylinder>
+            </a-entity>
+            <a-sphere id="finger-right" radius="0.05" color="red" position="10 10
