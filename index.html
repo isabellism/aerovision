@@ -3,61 +3,149 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 1.2.1 - Sequenciamento</title>
+    <title>AeroVision 1.2.2 - Mission Flow</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+
     <style>
         body { margin: 0; overflow: hidden; background: #000; display: flex; }
         .viewport { width: 50vw; height: 100vh; position: relative; overflow: hidden; border-right: 1px solid #333; }
         video.webcam { position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%; transform: translate(-50%, -50%); object-fit: cover; z-index: 1; }
-        a-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
+        a-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; background: transparent; }
         #btn { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; background: #00AAFF; color: white; border: none; border-radius: 10px; z-index: 9999; font-weight: bold; cursor: pointer;}
     </style>
 </head>
 <body>
-    <button id="btn">INICIAR MISSÃO DE MONTAGEM</button>
+
+    <button id="btn">INICIAR MISSÃO 1.2.2</button>
 
     <div class="viewport">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-sphere id="reset-left" position="-0.8 0.8 -2" radius="0.08" color="#FF4B4B"></a-sphere>
-            <a-text id="instruction-left" value="PASSO 1: ENCAIXE O EIXO" position="0 0.8 -2" align="center" width="2.5"></a-text>
+            <a-sphere id="reset-left" position="-0.7 0.7 -2" radius="0.08" color="#FF4B4B"></a-sphere>
+            <a-text id="txt-left" value="PASSO 1: ENCAIXE O EIXO" position="0 0.8 -2.2" align="center" width="2.5"></a-text>
             
             <a-entity id="p1-left" position="-0.5 0 -2.5" rotation="0 0 90">
                 <a-cylinder color="#777" height="0.6" radius="0.05"></a-cylinder>
             </a-entity>
-            <a-entity id="b1-left" position="0.5 -0.2 -2.5" rotation="0 0 90" geometry="primitive: cylinder; radius: 0.06; height: 0.6" material="opacity: 0.2; color: #FFF"></a-entity>
+            <a-entity id="b1-left" position="0.5 -0.2 -2.5" rotation="0 0 90">
+                <a-cylinder color="#FFF" height="0.6" radius="0.06" opacity="0.2"></a-cylinder>
+            </a-entity>
 
             <a-entity id="p2-left" position="-0.5 0 -2.5" visible="false">
-                <a-torus color="#00AAFF" radius="0.3" radius-tubular="0.02"></a-torus>
+                <a-torus color="#00AAFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus>
             </a-entity>
-            <a-entity id="b2-left" position="0.5 -0.2 -2.5" visible="false" geometry="primitive: torus; radius: 0.3; radius-tubular="0.02"" material="opacity: 0.2; color: #FFF"></a-entity>
+            <a-entity id="b2-left" position="0.5 -0.2 -2.5" visible="false">
+                <a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus>
+            </a-entity>
 
             <a-sphere id="finger-left" radius="0.05" color="red" position="10 10 10"></a-sphere>
+            <a-light type="ambient" intensity="1.2"></a-light>
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
         </a-scene>
     </div>
 
-    <div class="viewport" style="border-left: 1px solid #333;">
+    <div class="viewport" style="border-right: none;">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-sphere id="reset-right" position="-0.8 0.8 -2" radius="0.08" color="#FF4B4B"></a-sphere>
-            <a-text id="instruction-right" value="PASSO 1: ENCAIXE O EIXO" position="0 0.8 -2" align="center" width="2.5"></a-text>
+            <a-sphere id="reset-right" position="-0.7 0.7 -2" radius="0.08" color="#FF4B4B"></a-sphere>
+            <a-text id="txt-right" value="PASSO 1: ENCAIXE O EIXO" position="0 0.8 -2.2" align="center" width="2.5"></a-text>
             <a-entity id="p1-right" position="-0.5 0 -2.5" rotation="0 0 90"><a-cylinder color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
-            <a-entity id="b1-right" position="0.5 -0.2 -2.5" rotation="0 0 90" geometry="primitive: cylinder; radius: 0.06; height: 0.6" material="opacity: 0.2; color: #FFF"></a-entity>
-            <a-entity id="p2-right" position="-0.5 0 -2.5" visible="false"><a-torus color="#00AAFF" radius="0.3" radius-tubular="0.02"></a-torus></a-entity>
-            <a-entity id="b2-right" position="0.5 -0.2 -2.5" visible="false" geometry="primitive: torus; radius: 0.3; radius-tubular="0.02"" material="opacity: 0.2; color: #FFF"></a-entity>
+            <a-entity id="b1-right" position="0.5 -0.2 -2.5" rotation="0 0 90"><a-cylinder color="#FFF" height="0.6" radius="0.06" opacity="0.2"></a-cylinder></a-entity>
+            <a-entity id="p2-right" position="-0.5 0 -2.5" visible="false"><a-torus color="#00AAFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
+            <a-entity id="b2-right" position="0.5 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
             <a-sphere id="finger-right" radius="0.05" color="red" position="10 10 10"></a-sphere>
+            <a-light type="ambient" intensity="1.2"></a-light>
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
         </a-scene>
     </div>
 
     <script>
-        // Lógica de JavaScript para gerenciar os Passos 1 e 2
+        const btn = document.getElementById('btn');
+        const videos = document.querySelectorAll('.webcam');
+        const fingers = [document.getElementById('finger-left'), document.getElementById('finger-right')];
+        const texts = [document.getElementById('txt-left'), document.getElementById('txt-right')];
+        
         let currentStep = 1;
-        // ... (Reutilizar a lógica de Pinch e Grabbing, mas aplicando ao currentStep)
-        // [Aqui o código monitoraria se p1 está no b1 para liberar p2]
-        // [Para manter esta resposta scannable, vou focar no conceito]
+        let isGrabbing = false;
+        let posP1 = { x: -0.5, y: 0, z: -2.5 };
+        let posP2 = { x: -0.5, y: 0, z: -2.5 };
+        const basePos = { x: 0.5, y: -0.2, z: -2.5 };
+
+        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
+
+        hands.onResults((results) => {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const hand = results.multiHandLandmarks[0];
+                const index = hand[8];
+                const thumb = hand[4];
+                
+                const posX = (index.x - 0.5) * 3.5; 
+                const posY = (0.5 - index.y) * 2.5;
+                const pinch = Math.sqrt(Math.pow(thumb.x - index.x, 2) + Math.pow(thumb.y - index.y, 2));
+                
+                fingers.forEach(f => f.setAttribute('position', `${posX} ${posY} -2.2`));
+
+                // Lógica de RESET (Bolinha vermelha)
+                if (posX < -0.6 && posY > 0.6 && pinch < 0.1) location.reload();
+
+                if (currentStep === 1) {
+                    handleStep(posX, posY, pinch, posP1, 'p1', 1);
+                } else if (currentStep === 2) {
+                    handleStep(posX, posY, pinch, posP2, 'p2', 2);
+                }
+            }
+        });
+
+        function handleStep(x, y, p, posObj, idPrefix, stepNum) {
+            const dist = Math.sqrt(Math.pow(x - posObj.x, 2) + Math.pow(y - posObj.y, 2));
+            const targets = [document.getElementById(idPrefix + '-left'), document.getElementById(idPrefix + '-right')];
+
+            if (p < 0.1 && dist < 0.4) {
+                isGrabbing = true;
+                posObj.x = x; posObj.y = y;
+                targets.forEach(t => t.setAttribute('position', `${x} ${y} ${posObj.z}`));
+            } else if (isGrabbing) {
+                isGrabbing = false;
+                const distToBase = Math.sqrt(Math.pow(posObj.x - basePos.x, 2) + Math.pow(posObj.y - basePos.y, 2));
+                if (distToBase < 0.3) {
+                    snapPiece(targets, idPrefix, stepNum);
+                }
+            }
+        }
+
+        function snapPiece(targets, idPrefix, stepNum) {
+            targets.forEach(t => {
+                t.setAttribute('position', `${basePos.x} ${basePos.y} -2.5`);
+                t.querySelectorAll('*').forEach(child => child.setAttribute('color', '#32CD32'));
+            });
+
+            if (stepNum === 1) {
+                currentStep = 2;
+                texts.forEach(t => t.setAttribute('value', 'PASSO 2: INSTALE A CARCACA'));
+                document.getElementById('p2-left').setAttribute('visible', 'true');
+                document.getElementById('p2-right').setAttribute('visible', 'true');
+                document.getElementById('b2-left').setAttribute('visible', 'true');
+                document.getElementById('b2-right').setAttribute('visible', 'true');
+                document.getElementById('b1-left').setAttribute('visible', 'false');
+                document.getElementById('b1-right').setAttribute('visible', 'false');
+            } else {
+                texts.forEach(t => t.setAttribute('value', 'MISSAO CONCLUIDA!'));
+            }
+        }
+
+        async function loop() {
+            if (videos[0].readyState >= 2) await hands.send({image: videos[0]});
+            requestAnimationFrame(loop);
+        }
+
+        btn.addEventListener('click', async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            videos.forEach(v => { v.srcObject = stream; v.play(); });
+            btn.style.display = 'none';
+            setTimeout(loop, 1000);
+        });
     </script>
 </body>
 </html>
