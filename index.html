@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 2.1 - Core Fix</title>
+    <title>AeroVision 2.2 - Training System</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
@@ -17,50 +17,57 @@
 </head>
 <body>
 
-    <button id="start-btn">ENTRAR NO SISTEMA ORBITA</button>
+    <button id="start-btn">SISTEMA ORBITA: ON</button>
 
     <div class="viewport">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-sphere id="reset-l" position="-1.2 1.2 -2.5" radius="0.1" color="red"><a-text value="RESET" align="center" position="0 -0.2 0" width="2"></a-text></a-sphere>
-            <a-text id="txt-l" value="ESCOLHA O MODO" position="0 0.9 -2.5" align="center" width="2.5"></a-text>
-            
-            <a-entity id="menu-l">
-                <a-box position="-0.5 0.3 -2" scale="0.5 0.3 0.1" color="#00AAFF"></a-box>
-                <a-text value="APRENDIZADO" position="-0.5 0.3 -1.9" align="center" width="2.5"></a-text>
-                <a-box position="0.5 0.3 -2" scale="0.5 0.3 0.1" color="#FFD700"></a-box>
-                <a-text value="SIMULADO" position="0.5 0.3 -1.9" align="center" width="2.5" color="black"></a-text>
+            <a-entity id="cam-rig-l">
+                <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+                <a-sphere id="res-l" position="-1.2 1.1 -2.5" radius="0.1" color="red"><a-text value="RESET" align="center" position="0 -0.15 0" width="1.5"></a-text></a-sphere>
+                <a-text id="txt-l" value="ESCOLHA O MODO" position="0 0.9 -2.5" align="center" width="2.5"></a-text>
+                
+                <a-plane id="rep-l" position="0 0.2 -1.5" width="1.2" height="0.8" color="#111" visible="false" opacity="0.9">
+                    <a-text id="res-txt-l" value="" align="center" position="0 0 0.1" width="2.5"></a-text>
+                </a-plane>
+
+                <a-entity id="menu-l">
+                    <a-box id="ml-l" position="-0.5 0.3 -2" scale="0.5 0.3 0.1" color="#00AAFF"><a-text value="APRENDIZADO" align="center" width="2"></a-text></a-box>
+                    <a-box id="ms-l" position="0.5 0.3 -2" scale="0.5 0.3 0.1" color="#FFD700"><a-text value="SIMULADO" align="center" width="2" color="black"></a-text></a-box>
+                </a-entity>
+
+                <a-entity id="p1-l" position="-0.7 0 -2.5" rotation="0 0 90" visible="false"><a-cylinder id="c1-l" color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
+                <a-entity id="b1-l" position="0.7 -0.2 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#FFF" height="0.6" radius="0.07" opacity="0.2"></a-cylinder></a-entity>
+                <a-entity id="p2-l" position="-0.7 -0.4 -2.5" visible="false"><a-torus id="c2-l" color="#0066FF" radius="0.2" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
+                <a-entity id="b2-l" position="0.7 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.2" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
+
+                <a-sphere id="f-l" radius="0.05" color="red" position="10 10 10"></a-sphere>
             </a-entity>
-
-            <a-entity id="p1-l" position="-0.7 0 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
-            <a-entity id="b1-l" position="0.7 -0.2 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#FFF" height="0.6" radius="0.07" opacity="0.2"></a-cylinder></a-entity>
-            <a-entity id="p2-l" position="-0.7 -0.4 -2.5" visible="false"><a-torus color="#00AAFF" radius="0.2" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
-            <a-entity id="b2-l" position="0.7 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.2" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
-
-            <a-sphere id="f-l" radius="0.05" color="red" position="10 10 10"></a-sphere>
             <a-light type="ambient" intensity="1.2"></a-light>
-            <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
         </a-scene>
     </div>
 
     <div class="viewport" style="border-right: none;">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-sphere id="reset-r" position="-1.2 1.2 -2.5" radius="0.1" color="red"><a-text value="RESET" align="center" position="0 -0.2 0" width="2"></a-text></a-sphere>
-            <a-text id="txt-r" value="ESCOLHA O MODO" position="0 0.9 -2.5" align="center" width="2.5"></a-text>
-            <a-entity id="menu-r">
-                <a-box position="-0.5 0.3 -2" scale="0.5 0.3 0.1" color="#00AAFF"></a-box>
-                <a-text value="APRENDIZADO" position="-0.5 0.3 -1.9" align="center" width="2.5"></a-text>
-                <a-box position="0.5 0.3 -2" scale="0.5 0.3 0.1" color="#FFD700"></a-box>
-                <a-text value="SIMULADO" position="0.5 0.3 -1.9" align="center" width="2.5" color="black"></a-text>
+            <a-entity id="cam-rig-r">
+                <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+                <a-sphere id="res-r" position="-1.2 1.1 -2.5" radius="0.1" color="red"><a-text value="RESET" align="center" position="0 -0.15 0" width="1.5"></a-text></a-sphere>
+                <a-text id="txt-r" value="ESCOLHA O MODO" position="0 0.9 -2.5" align="center" width="2.5"></a-text>
+                <a-plane id="rep-r" position="0 0.2 -1.5" width="1.2" height="0.8" color="#111" visible="false" opacity="0.9">
+                    <a-text id="res-txt-r" value="" align="center" position="0 0 0.1" width="2.5"></a-text>
+                </a-plane>
+                <a-entity id="menu-r">
+                    <a-box id="ml-r" position="-0.5 0.3 -2" scale="0.5 0.3 0.1" color="#00AAFF"><a-text value="APRENDIZADO" align="center" width="2"></a-text></a-box>
+                    <a-box id="ms-r" position="0.5 0.3 -2" scale="0.5 0.3 0.1" color="#FFD700"><a-text value="SIMULADO" align="center" width="2" color="black"></a-text></a-box>
+                </a-entity>
+                <a-entity id="p1-r" position="-0.7 0 -2.5" rotation="0 0 90" visible="false"><a-cylinder id="c1-r" color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
+                <a-entity id="b1-r" position="0.7 -0.2 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#FFF" height="0.6" radius="0.07" opacity="0.2"></a-cylinder></a-entity>
+                <a-entity id="p2-r" position="-0.7 -0.4 -2.5" visible="false"><a-torus id="c2-r" color="#0066FF" radius="0.2" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
+                <a-entity id="b2-r" position="0.7 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.2" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
+                <a-sphere id="f-r" radius="0.05" color="red" position="10 10 10"></a-sphere>
             </a-entity>
-            <a-entity id="p1-r" position="-0.7 0 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
-            <a-entity id="b1-r" position="0.7 -0.2 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#FFF" height="0.6" radius="0.07" opacity="0.2"></a-cylinder></a-entity>
-            <a-entity id="p2-r" position="-0.7 -0.4 -2.5" visible="false"><a-torus color="#00AAFF" radius="0.2" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
-            <a-entity id="b2-r" position="0.7 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.2" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
-            <a-sphere id="f-r" radius="0.05" color="red" position="10 10 10"></a-sphere>
             <a-light type="ambient" intensity="1.2"></a-light>
-            <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
         </a-scene>
     </div>
 
@@ -68,10 +75,12 @@
         const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
         hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 
-        let appState = "MENU"; let gameMode = ""; let currentStep = 1;
-        let isGrabbing = false;
+        let state = "MENU"; let mode = ""; let step = 1;
+        let grabbing = false; let activeId = null;
+        let errors = 0; let startTime = 0;
         let p1Pos = {x:-0.7, y:0}; let p2Pos = {x:-0.7, y:-0.4};
         const targetPos = {x:0.7, y:-0.2};
+        let p1Snapped = false; let p2Snapped = false;
 
         hands.onResults((res) => {
             if (!res.multiHandLandmarks || res.multiHandLandmarks.length === 0) {
@@ -80,8 +89,7 @@
             }
 
             const h = res.multiHandLandmarks[0];
-            const x = (h[8].x - 0.5) * 4.5; 
-            const y = (0.5 - h[8].y) * 3;
+            const x = (h[8].x - 0.5) * 4.5; const y = (0.5 - h[8].y) * 3;
             const pinch = Math.sqrt(Math.pow(h[4].x - h[8].x, 2) + Math.pow(h[4].y - h[8].y, 2));
             
             document.querySelectorAll('[id^="f-"]').forEach(f => f.setAttribute('position', `${x} ${y} -2.2`));
@@ -89,79 +97,114 @@
             // RESET
             if (x < -1.1 && y > 0.9 && pinch < 0.1) softReset();
 
-            // MENU SELECTION
-            if (appState === "MENU" && pinch < 0.1) {
-                if (x < 0 && Math.abs(y - 0.3) < 0.3) startGame("learn");
-                if (x > 0 && Math.abs(y - 0.3) < 0.3) startGame("sim");
+            if (state === "MENU" && pinch < 0.1) {
+                if (x < 0 && Math.abs(y-0.3) < 0.3) initGame("learn");
+                if (x > 0 && Math.abs(y-0.3) < 0.3) initGame("sim");
                 return;
             }
 
-            // GAMEPLAY
-            if (appState === "PLAY") {
-                const activeId = currentStep === 1 ? 'p1' : 'p2';
-                const activePos = currentStep === 1 ? p1Pos : p2Pos;
-                const dist = Math.sqrt(Math.pow(x - activePos.x, 2) + Math.pow(y - activePos.y, 2));
+            if (state === "PLAY") {
+                // No Simulado, pode pegar qualquer uma que não esteja encaixada
+                // No Aprendizado, apenas a do passo atual
+                let targetPiece = "";
+                if (mode === "learn") {
+                    targetPiece = step === 1 ? "p1" : "p2";
+                } else {
+                    const d1 = Math.sqrt(Math.pow(x-p1Pos.x,2)+Math.pow(y-p1Pos.y,2));
+                    const d2 = Math.sqrt(Math.pow(x-p2Pos.x,2)+Math.pow(y-p2Pos.y,2));
+                    if (!p1Snapped && d1 < 0.5) targetPiece = "p1";
+                    else if (!p2Snapped && d2 < 0.5) targetPiece = "p2";
+                }
 
-                if (pinch < 0.08 && dist < 0.5) {
-                    isGrabbing = true;
-                    activePos.x = x; activePos.y = y;
-                    document.querySelectorAll(`[id^="${activeId}-"]`).forEach(el => el.setAttribute('position', `${x} ${y} -2.5`));
-                } else if (isGrabbing) {
-                    isGrabbing = false;
-                    const distToTarget = Math.sqrt(Math.pow(activePos.x - targetPos.x, 2) + Math.pow(activePos.y - targetPos.y, 2));
-                    if (distToTarget < 0.4) snap();
-                    else fail(activeId);
+                if (pinch < 0.08 && targetPiece && (!grabbing || activeId === targetPiece)) {
+                    grabbing = true; activeId = targetPiece;
+                    let p = activeId === "p1" ? p1Pos : p2Pos;
+                    p.x = x; p.y = y;
+                    updateVisuals(activeId, x, y);
+                    
+                    // Guia no Aprendizado: faz o alvo brilhar
+                    if (mode === "learn") updateColor(activeId === "p1" ? "b1" : "b2", "#FFFF00");
+                } else if (grabbing) {
+                    checkRelease();
                 }
             }
         });
 
-        function startGame(m) {
-            appState = "PLAY"; gameMode = m;
+        function initGame(m) {
+            state = "PLAY"; mode = m; errors = 0; startTime = Date.now();
             document.querySelectorAll('[id^="menu-"]').forEach(el => el.setAttribute('visible', 'false'));
-            updateTxt(gameMode === 'learn' ? "MODO APRENDIZADO" : "MODO SIMULADO", "#FFF");
-            show(['p1', 'b1'], true);
-            if(gameMode === 'sim') show(['p2'], true);
+            if (mode === "learn") {
+                updateTxt("MODO APRENDIZADO: SIGA O BRILHO", "#00AAFF");
+                show(['p1', 'b1'], true);
+            } else {
+                updateTxt("MODO SIMULADO: MONTE TUDO!", "#FFD700");
+                show(['p1', 'b1', 'p2', 'b2'], true);
+            }
         }
 
-        function snap() {
-            const id = currentStep === 1 ? 'p1' : 'p2';
+        function checkRelease() {
+            grabbing = false;
+            let p = activeId === "p1" ? p1Pos : p2Pos;
+            const dist = Math.sqrt(Math.pow(p.x - targetPos.x, 2) + Math.pow(p.y - targetPos.y, 2));
+
+            if (dist < 0.4) {
+                snap(activeId);
+            } else {
+                if (mode === "sim") {
+                    errors++;
+                    updateTxt(`ERRO! POSICAO INCORRETA (${errors})`, "#FF4B4B");
+                    let rx = -0.7; let ry = activeId === "p1" ? 0 : -0.4;
+                    p.x = rx; p.y = ry;
+                    updateVisuals(activeId, rx, ry);
+                }
+            }
+            activeId = null;
+        }
+
+        function snap(id) {
+            if (id === "p1") p1Snapped = true; else p2Snapped = true;
             document.querySelectorAll(`[id^="${id}-"]`).forEach(el => {
                 el.setAttribute('position', `${targetPos.x} ${targetPos.y} -2.5`);
                 el.querySelector('*').setAttribute('color', '#32CD32');
             });
-            if (currentStep === 1) {
-                currentStep = 2;
-                updateTxt("PASSO 2: CARCACA", "#FFF");
-                show(['p2', 'b2'], true);
-                show(['b1'], false);
-            } else {
-                updateTxt("MISSAO COMPLETA!", "#32CD32");
+
+            if (mode === "learn" && step === 1) {
+                step = 2;
+                updateTxt("PASSO 2: A CARCACA", "#FFF");
+                show(['p2', 'b2'], true); show(['b1'], false);
+            } else if (p1Snapped && p2Snapped) {
+                finish();
             }
         }
 
-        function fail(id) {
-            updateTxt("ERRO: POSICAO INCORRETA", "#FF4B4B");
-            const rx = -0.7; const ry = (id === 'p1' ? 0 : -0.4);
-            if(id === 'p1') { p1Pos.x = rx; p1Pos.y = ry; } else { p2Pos.x = rx; p2Pos.y = ry; }
-            setTimeout(() => {
-                document.querySelectorAll(`[id^="${id}-"]`).forEach(el => el.setAttribute('position', `${rx} ${ry} -2.5`));
-                updateTxt(currentStep === 1 ? "PASSO 1: EIXO" : "PASSO 2: CARCACA", "#FFF");
-            }, 1000);
+        function finish() {
+            state = "END";
+            const time = Math.floor((Date.now() - startTime) / 1000);
+            const report = `MISSAO COMPLETA!\n\nTempo: ${time}s\nErros: ${errors}\nEficiencia: ${Math.max(0, 100-(errors*10))}%`;
+            document.querySelectorAll('[id^="rep-"]').forEach(el => el.setAttribute('visible', 'true'));
+            document.querySelectorAll('[id^="res-txt-"]').forEach(el => el.setAttribute('value', report));
+            updateTxt("RESULTADO FINAL", "#32CD32");
         }
 
         function softReset() {
-            appState = "MENU"; currentStep = 1; isGrabbing = false;
+            state = "MENU"; mode = ""; step = 1; grabbing = false;
+            p1Snapped = false; p2Snapped = false; errors = 0;
             p1Pos = {x:-0.7, y:0}; p2Pos = {x:-0.7, y:-0.4};
             document.querySelectorAll('[id^="menu-"]').forEach(el => el.setAttribute('visible', 'true'));
+            document.querySelectorAll('[id^="rep-"]').forEach(el => el.setAttribute('visible', 'false'));
             show(['p1','p2','b1','b2'], false);
             updateTxt("ESCOLHA O MODO", "#FFF");
-            // Resetar cores originais
-            document.querySelectorAll('[id^="p1-"] *').forEach(e => e.setAttribute('color', '#777'));
-            document.querySelectorAll('[id^="p2-"] *').forEach(e => e.setAttribute('color', '#00AAFF'));
+            // Resetar cores
+            document.querySelectorAll('[id^="c1-"]').forEach(e => e.setAttribute('color', '#777'));
+            document.querySelectorAll('[id^="c2-"]').forEach(e => e.setAttribute('color', '#0066FF'));
         }
 
+        function updateVisuals(id, x, y) {
+            document.querySelectorAll(`[id^="${id}-"]`).forEach(el => el.setAttribute('position', `${x} ${y} -2.5`));
+        }
         function updateTxt(m, c) { document.querySelectorAll('[id^="txt-"]').forEach(t => { t.setAttribute('value', m); t.setAttribute('color', c); }); }
         function show(ids, s) { ids.forEach(id => { document.querySelectorAll(`[id^="${id}-"]`).forEach(el => el.setAttribute('visible', s)); }); }
+        function updateColor(id, color) { document.querySelectorAll(`[id^="${id}-"]`).forEach(el => el.querySelector('*').setAttribute('color', color)); }
 
         document.getElementById('start-btn').addEventListener('click', async () => {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
