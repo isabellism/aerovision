@@ -3,66 +3,75 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 1.4 - Manual Split</title>
+    <title>AeroVision 1.1.1 - FINAL 3D</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; display: flex; }
-        .viewport {
-            width: 50vw; height: 100vh;
-            position: relative; overflow: hidden;
-            border-right: 1px solid #333;
+        body { margin: 0; overflow: hidden; background: #000; }
+        /* O vídeo da câmera fica no fundo */
+        #webcam-feed {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: 1;
         }
-        video {
-            position: absolute; top: 50%; left: 50%;
-            min-width: 100%; min-height: 100%;
-            width: auto; height: auto;
-            transform: translate(-50%, -50%);
-            object-fit: cover;
+        /* A cena 3D fica transparente por cima */
+        a-scene {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2; pointer-events: none; /* Deixa o toque passar para o botão */
         }
-        .cube-overlay {
-            position: absolute; top: 50%; left: 50%;
-            width: 100px; height: 100px;
-            background: rgba(0, 170, 255, 0.7);
-            transform: translate(-50%, -50%) rotate(45deg);
-            box-shadow: 0 0 20px #00AAFF;
-            animation: spin 3s linear infinite;
-        }
-        @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(405deg); } }
-        
         #btn {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             padding: 20px; background: #00AAFF; color: white; border: none;
-            border-radius: 10px; z-index: 9999; font-weight: bold;
+            border-radius: 10px; z-index: 9999; font-weight: bold; font-size: 16px;
         }
     </style>
 </head>
 <body>
 
-    <button id="btn">INICIAR CÂMERA DUPLA</button>
+    <button id="btn">INICIAR REALIDADE MISTA 3D</button>
 
-    <div class="viewport">
-        <video class="webcam" autoplay playsinline muted></video>
-        <div class="cube-overlay"></div>
-    </div>
+    <video id="webcam-feed" autoplay playsinline muted></video>
 
-    <div class="viewport">
-        <video class="webcam" autoplay playsinline muted></video>
-        <div class="cube-overlay"></div>
-    </div>
+    <a-scene vr-mode-ui="enabled: false" background="color: transparent;">
+        
+        <a-box position="0 0 -3" 
+               rotation="0 45 0" 
+               color="#00AAFF" 
+               opacity="0.9"
+               animation="property: rotation; to: 0 405 0; loop: true; dur: 5000; easing: linear">
+        </a-box>
+        
+        <a-light type="directional" position="1 2 1" intensity="1.5"></a-light>
+        <a-light type="ambient" color="#CCC"></a-light>
+
+        <a-entity id="stereo-rig">
+            <a-camera position="-0.03 1.6 0" camera="viewport: 0 0 0.5 1; active: false;"></a-camera>
+            
+            <a-camera position="0.03 1.6 0" camera="viewport: 0.5 0 0.5 1; active: true;"></a-camera>
+        </a-entity>
+
+    </a-scene>
 
     <script>
         const btn = document.getElementById('btn');
-        const videos = document.querySelectorAll('.webcam');
+        const video = document.getElementById('webcam-feed');
+        const rig = document.getElementById('stereo-rig');
 
         btn.addEventListener('click', function() {
+            // 1. Inicia a Câmera do iPhone
             navigator.mediaDevices.getUserMedia({ 
                 video: { facingMode: 'environment' } 
             }).then(function(stream) {
-                videos.forEach(v => {
-                    v.srcObject = stream;
-                    v.play();
-                });
+                video.srcObject = stream;
+                video.play();
                 btn.style.display = 'none';
-            }).catch(err => alert("Erro: " + err));
+                
+                // ATIVAR AS DUAS CÂMERAS 3D
+                // Precisamos ativar as duas câmeras manualmente pois não estamos no modo VR nativo
+                rig.children[0].setAttribute('camera', 'active', true);
+                rig.children[1].setAttribute('camera', 'active', true);
+
+            }).catch(err => {
+                alert("Erro na câmera: Verifique as permissões no Safari.");
+            });
         });
     </script>
 </body>
