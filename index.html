@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 1.1.2 - Force Rear Cam</title>
+    <title>AeroVision 1.1.2 - 3D Polish</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
@@ -17,13 +17,18 @@
 </head>
 <body>
 
-    <button id="btn">ATIVAR CÂMERA TRASEIRA</button>
+    <button id="btn">INICIAR AERovision 3D</button>
 
     <div class="viewport">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-box id="target-left" position="0 0 -2" scale="0.4 0.4 0.4" color="#00AAFF"></a-box>
+            <a-assets><a-mixin id="cube-style" geometry="primitive: box" material="color: #00AAFF; roughness: 0.3"></a-mixin></a-assets>
+            <a-entity id="target-left" mixin="cube-style" position="0 0 -2" rotation="30 45 0" scale="0.4 0.4 0.4"></a-entity>
             <a-sphere id="finger-left" radius="0.06" color="red" position="10 10 10"></a-sphere>
+            
+            <a-light type="directional" position="1 2 1" intensity="1.2"></a-light>
+            <a-light type="ambient" intensity="0.6"></a-light>
+            
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
         </a-scene>
     </div>
@@ -31,8 +36,12 @@
     <div class="viewport" style="border-right: none;">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-box id="target-right" position="0 0 -2" scale="0.4 0.4 0.4" color="#00AAFF"></a-box>
+            <a-entity id="target-right" mixin="cube-style" position="0 0 -2" rotation="30 45 0" scale="0.4 0.4 0.4"></a-entity>
             <a-sphere id="finger-right" radius="0.06" color="red" position="10 10 10"></a-sphere>
+            
+            <a-light type="directional" position="1 2 1" intensity="1.2"></a-light>
+            <a-light type="ambient" intensity="0.6"></a-light>
+            
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
         </a-scene>
     </div>
@@ -43,74 +52,39 @@
         const cubes = [document.getElementById('target-left'), document.getElementById('target-right')];
         const fingers = [document.getElementById('finger-left'), document.getElementById('finger-right')];
 
-        const hands = new Hands({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-        });
-
-        hands.setOptions({
-            maxNumHands: 1,
-            modelComplexity: 1,
-            minDetectionConfidence: 0.6,
-            minTrackingConfidence: 0.6
-        });
+        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 
         hands.onResults((results) => {
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
                 const hand = results.multiHandLandmarks[0];
                 const indexFinger = hand[8];
-                
-                // Ajuste de coordenadas para câmera traseira
                 const posX = (indexFinger.x - 0.5) * 3.5; 
                 const posY = (0.5 - indexFinger.y) * 2.5;
 
-                fingers.forEach(f => {
-                    f.setAttribute('position', `${posX} ${posY} -1.8`);
-                });
+                fingers.forEach(f => f.setAttribute('position', `${posX} ${posY} -1.8`));
 
                 const dist = Math.sqrt(Math.pow(posX - 0, 2) + Math.pow(posY - 0, 2));
-                if (dist < 0.25) {
-                    cubes.forEach(c => c.setAttribute('color', 'yellow'));
+                if (dist < 0.3) {
+                    cubes.forEach(c => c.setAttribute('material', 'color', 'yellow'));
                 } else {
-                    cubes.forEach(c => c.setAttribute('color', '#00AAFF'));
+                    cubes.forEach(c => c.setAttribute('material', 'color', '#00AAFF'));
                 }
             } else {
-                // Esconde a esfera se não vir a mão
                 fingers.forEach(f => f.setAttribute('position', '10 10 10'));
             }
         });
 
         async function onFrame() {
-            if (!videos[0].paused && !videos[0].ended) {
-                await hands.send({image: videos[0]});
-            }
+            if (!videos[0].paused && !videos[0].ended) { await hands.send({image: videos[0]}); }
             requestAnimationFrame(onFrame);
         }
 
         btn.addEventListener('click', async () => {
-            try {
-                // Configuração definitiva para iOS Safari
-                const constraints = {
-                    video: {
-                        facingMode: "environment",
-                        width: { ideal: 640 },
-                        height: { ideal: 480 }
-                    }
-                };
-
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                videos.forEach(v => {
-                    v.srcObject = stream;
-                    v.onloadedmetadata = () => {
-                        v.play();
-                    };
-                });
-                
-                btn.style.display = 'none';
-                onFrame(); // Inicia o loop de processamento da mão
-
-            } catch (err) {
-                alert("Erro ao acessar câmera traseira: " + err);
-            }
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            videos.forEach(v => { v.srcObject = stream; v.play(); });
+            btn.style.display = 'none';
+            onFrame();
         });
     </script>
 </body>
