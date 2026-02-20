@@ -3,39 +3,38 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 1.4 - Master Fixed</title>
+    <title>AeroVision 2.0 - Core System</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
     <style>
-        body { margin: 0; overflow: hidden; background: #000; display: flex; }
-        .viewport { width: 50vw; height: 100vh; position: relative; overflow: hidden; border-right: 1px solid #444; }
+        body { margin: 0; overflow: hidden; background: #000; display: flex; font-family: sans-serif; }
+        .viewport { width: 50vw; height: 100vh; position: relative; overflow: hidden; border-right: 1px solid #333; }
         video.webcam { position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%; transform: translate(-50%, -50%); object-fit: cover; z-index: 1; }
         a-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
-        #btn-start { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 25px 40px; background: #00AAFF; color: white; border: none; border-radius: 15px; z-index: 10000; font-weight: bold; font-size: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        #start-btn { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 30px; background: #00AAFF; color: white; border: none; border-radius: 15px; z-index: 10000; font-weight: bold; font-size: 1.2rem; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
-    <button id="btn-start">INICIAR AERovision</button>
+    <button id="start-btn">INICIAR SISTEMA ORBITA</button>
 
     <div class="viewport">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-sphere id="res-l" position="-1.3 1.1 -2.5" radius="0.08" color="#FF0000">
-                <a-text value="RESET" align="center" position="0 -0.2 0" width="1.5"></a-text>
-            </a-sphere>
+            <a-sphere id="reset-l" position="-1.2 1.1 -2.5" radius="0.1" color="red"><a-text value="RESET" align="center" position="0 -0.2 0" width="1.5"></a-text></a-sphere>
             <a-text id="txt-l" value="ESCOLHA O MODO" position="0 0.9 -2.5" align="center" width="2.5"></a-text>
             
             <a-entity id="menu-l">
-                <a-box id="m1-l" position="-0.5 0.3 -2" scale="0.4 0.2 0.1" color="#00AAFF"><a-text value="APRENDIZADO" align="center" width="2"></a-text></a-box>
-                <a-box id="m2-l" position="0.5 0.3 -2" scale="0.4 0.2 0.1" color="#FFD700"><a-text value="SIMULADO" align="center" width="2" color="#000"></a-text></a-box>
+                <a-box id="btn-learn-l" position="-0.5 0.3 -2" scale="0.5 0.3 0.1" color="#00AAFF"><a-text value="APRENDIZADO" align="center" width="2.5"></a-text></a-box>
+                <a-box id="btn-sim-l" position="0.5 0.3 -2" scale="0.5 0.3 0.1" color="#FFD700"><a-text value="SIMULADO" align="center" width="2.5" color="black"></a-text></a-box>
             </a-entity>
 
             <a-entity id="p1-l" position="-0.7 0 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
             <a-entity id="b1-l" position="0.7 -0.2 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#FFF" height="0.6" radius="0.07" opacity="0.2"></a-cylinder></a-entity>
-            <a-entity id="p2-l" position="-0.7 -0.4 -2.5" visible="false"><a-torus color="#00AAFF" radius="0.2" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
-            <a-entity id="b2-l" position="0.7 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.2" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
+            
+            <a-entity id="p2-l" position="-0.7 -0.4 -2.5" visible="false"><a-torus color="#00AAFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
+            <a-entity id="b2-l" position="0.7 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
 
             <a-sphere id="f-l" radius="0.05" color="red" position="10 10 10"></a-sphere>
             <a-light type="ambient" intensity="1.2"></a-light>
@@ -46,16 +45,16 @@
     <div class="viewport" style="border-right: none;">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-sphere id="res-r" position="-1.2 1.1 -2.5" radius="0.08" color="#FF0000"><a-text value="RESET" align="center" position="0 -0.15 0" width="1.5"></a-text></a-sphere>
+            <a-sphere id="reset-r" position="-1.2 1.1 -2.5" radius="0.1" color="red"><a-text value="RESET" align="center" position="0 -0.2 0" width="1.5"></a-text></a-sphere>
             <a-text id="txt-r" value="ESCOLHA O MODO" position="0 0.9 -2.5" align="center" width="2.5"></a-text>
             <a-entity id="menu-r">
-                <a-box id="m1-r" position="-0.5 0.3 -2" scale="0.4 0.2 0.1" color="#00AAFF"><a-text value="APRENDIZADO" align="center" width="2"></a-text></a-box>
-                <a-box id="m2-r" position="0.5 0.3 -2" scale="0.4 0.2 0.1" color="#FFD700"><a-text value="SIMULADO" align="center" width="2" color="#000"></a-text></a-box>
+                <a-box id="btn-learn-r" position="-0.5 0.3 -2" scale="0.5 0.3 0.1" color="#00AAFF"><a-text value="APRENDIZADO" align="center" width="2.5"></a-text></a-box>
+                <a-box id="btn-sim-r" position="0.5 0.3 -2" scale="0.5 0.3 0.1" color="#FFD700"><a-text value="SIMULADO" align="center" width="2.5" color="black"></a-text></a-box>
             </a-entity>
             <a-entity id="p1-r" position="-0.7 0 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
             <a-entity id="b1-r" position="0.7 -0.2 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#FFF" height="0.6" radius="0.07" opacity="0.2"></a-cylinder></a-entity>
-            <a-entity id="p2-r" position="-0.7 -0.4 -2.5" visible="false"><a-torus color="#00AAFF" radius="0.2" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
-            <a-entity id="b2-r" position="0.7 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.2" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
+            <a-entity id="p2-r" position="-0.7 -0.4 -2.5" visible="false"><a-torus color="#00AAFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
+            <a-entity id="b2-r" position="0.7 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
             <a-sphere id="f-r" radius="0.05" color="red" position="10 10 10"></a-sphere>
             <a-light type="ambient" intensity="1.2"></a-light>
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
@@ -63,106 +62,115 @@
     </div>
 
     <script>
-        // Inicialização MediaPipe
         const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
         hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 
-        let state = "MENU"; let step = 1; let grabbing = false;
+        let state = "MENU"; 
+        let mode = ""; // 'learn' ou 'sim'
+        let step = 1;
+        let grabbing = false;
         let p1Pos = {x:-0.7, y:0}; let p2Pos = {x:-0.7, y:-0.4};
         const targetPos = {x:0.7, y:-0.2};
 
         hands.onResults((res) => {
             if (res.multiHandLandmarks && res.multiHandLandmarks.length > 0) {
                 const h = res.multiHandLandmarks[0];
-                const x = (h[8].x - 0.5) * 4; 
-                const y = (0.5 - h[8].y) * 2.8;
+                const x = (h[8].x - 0.5) * 4.5; 
+                const y = (0.5 - h[8].y) * 3;
                 const pinch = Math.sqrt(Math.pow(h[4].x - h[8].x, 2) + Math.pow(h[4].y - h[8].y, 2));
                 
                 document.querySelectorAll('[id^="f-"]').forEach(f => f.setAttribute('position', `${x} ${y} -2.2`));
 
-                // RESET LOGIC
-                if (x < -1 && y > 0.8 && pinch < 0.1) resetGame();
+                // 1. Lógica do RESET
+                if (x < -1.1 && y > 0.9 && pinch < 0.1) resetAll();
 
-                // MENU LOGIC
+                // 2. Lógica do MENU
                 if (state === "MENU" && pinch < 0.1) {
-                    if (x < 0) startGame("learn");
-                    else if (x > 0) startGame("sim");
+                    if (x < 0 && Math.abs(y - 0.3) < 0.3) initMode("learn");
+                    if (x > 0 && Math.abs(y - 0.3) < 0.3) initMode("sim");
                     return;
                 }
 
-                // PLAY LOGIC
+                // 3. Lógica de JOGO
                 if (state === "PLAY") {
-                    const active = step === 1 ? 'p1' : 'p2';
-                    const pos = step === 1 ? p1Pos : p2Pos;
-                    const dist = Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2));
+                    let activeId = step === 1 ? 'p1' : 'p2';
+                    let activePos = step === 1 ? p1Pos : p2Pos;
+                    
+                    // No simulado, você pode tentar pegar qualquer uma, mas o código foca na atual para simplificar
+                    const dist = Math.sqrt(Math.pow(x - activePos.x, 2) + Math.pow(y - activePos.y, 2));
+                    const distToTarget = Math.sqrt(Math.pow(x - targetPos.x, 2) + Math.pow(y - targetPos.y, 2));
 
                     if (pinch < 0.08 && dist < 0.5) {
-                        grabbing = true;
-                        pos.x = x; pos.y = y;
-                        document.querySelectorAll(`[id^="${active}-"]`).forEach(el => el.setAttribute('position', `${x} ${y} -2.5`));
-                    } else if (grabbing) {
-                        grabbing = false;
-                        const distToTarget = Math.sqrt(Math.pow(pos.x - targetPos.x, 2) + Math.pow(pos.y - targetPos.y, 2));
-                        if (distToTarget < 0.35) snap();
-                        else fail(active);
+                        isGrabbing = true;
+                        activePos.x = x; activePos.y = y;
+                        updateVisuals(activeId, x, y);
+                    } else if (isGrabbing) {
+                        isGrabbing = false;
+                        if (distToTarget < 0.35) snap(activeId);
+                        else fail(activeId);
                     }
                 }
             }
         });
 
-        function startGame(mode) {
-            state = "PLAY";
-            document.querySelectorAll('[id^="menu-"]').forEach(m => m.setAttribute('visible', 'false'));
-            updateTxt("PASSO 1: ENCAIXE O EIXO", "#FFF");
+        function initMode(m) {
+            state = "PLAY"; mode = m;
+            document.querySelectorAll('[id^="menu-"]').forEach(el => el.setAttribute('visible', 'false'));
+            updateUI(mode === 'learn' ? "MODO APRENDIZADO - PASSO 1" : "MODO SIMULADO - MONTAGEM", "#FFF");
+            
             show(['p1', 'b1'], true);
-            if(mode === 'sim') show(['p2'], true); 
+            if(mode === 'sim') show(['p2'], true); // No simulado todas aparecem
         }
 
-        function snap() {
-            const active = step === 1 ? 'p1' : 'p2';
-            document.querySelectorAll(`[id^="${active}-"]`).forEach(el => {
+        function updateVisuals(id, x, y) {
+            document.querySelectorAll(`[id^="${id}-"]`).forEach(el => el.setAttribute('position', `${x} ${y} -2.5`));
+        }
+
+        function snap(id) {
+            document.querySelectorAll(`[id^="${id}-"]`).forEach(el => {
                 el.setAttribute('position', `${targetPos.x} ${targetPos.y} -2.5`);
                 el.querySelector('*').setAttribute('color', '#32CD32');
             });
             if (step === 1) {
                 step = 2;
-                updateTxt("PASSO 2: INSTALE A CARCACA", "#FFF");
+                updateUI("PASSO 2: CARCACA", "#FFF");
                 show(['p2', 'b2'], true);
                 show(['b1'], false);
             } else {
-                updateTxt("MISSAO COMPLETA!", "#32CD32");
+                updateUI("MISSAO CONCLUIDA!", "#32CD32");
             }
         }
 
-        function fail(active) {
-            updateTxt("ERRO: POSICAO INCORRETA", "#FF4B4B");
-            const resetX = -0.7; const resetY = (active === 'p1' ? 0 : -0.4);
-            if(active === 'p1') { p1Pos.x = resetX; p1Pos.y = resetY; } else { p2Pos.x = resetX; p2Pos.y = resetY; }
+        function fail(id) {
+            updateUI("ERRO! POSICAO ERRADA", "#FF4B4B");
+            const resetX = -0.7; const resetY = (id === 'p1' ? 0 : -0.4);
+            if(id === 'p1') { p1Pos.x = resetX; p1Pos.y = resetY; } else { p2Pos.x = resetX; p2Pos.y = resetY; }
             setTimeout(() => {
-                document.querySelectorAll(`[id^="${active}-"]`).forEach(el => el.setAttribute('position', `${resetX} ${resetY} -2.5`));
-                updateTxt(step === 1 ? "PASSO 1: ENCAIXE O EIXO" : "PASSO 2: INSTALE A CARCACA", "#FFF");
+                updateVisuals(id, resetX, resetY);
+                updateUI(step === 1 ? "PASSO 1: ENCAIXE O EIXO" : "PASSO 2: ENCAIXE A CARCACA", "#FFF");
             }, 1000);
         }
 
-        function resetGame() {
+        function resetAll() {
             currentStep = 1; state = "MENU"; isGrabbing = false;
             p1Pos = {x:-0.7, y:0}; p2Pos = {x:-0.7, y:-0.4};
-            updateTxt("ESCOLHA O MODO", "#FFF");
+            updateUI("ESCOLHA O MODO", "#FFF");
             document.querySelectorAll('[id^="menu-"]').forEach(m => m.setAttribute('visible', 'true'));
             show(['p1','p2','b1','b2'], false);
-            document.querySelectorAll('[id^="c1-"]').forEach(el => el.setAttribute('color', '#777'));
-            document.querySelectorAll('[id^="c2-"]').forEach(el => el.setAttribute('color', '#00AAFF'));
+            document.getElementById('c1-left').setAttribute('color', '#777');
+            document.getElementById('c1-right').setAttribute('color', '#777');
+            document.getElementById('c2-left').setAttribute('color', '#00AAFF');
+            document.getElementById('c2-right').setAttribute('color', '#00AAFF');
         }
 
-        function updateTxt(m, c) { document.querySelectorAll('[id^="txt-"]').forEach(t => { t.setAttribute('value', m); t.setAttribute('color', c); }); }
+        function updateUI(m, c) { document.querySelectorAll('[id^="txt-"]').forEach(t => { t.setAttribute('value', m); t.setAttribute('color', c); }); }
         function show(ids, s) { ids.forEach(id => { document.querySelectorAll(`[id^="${id}-"]`).forEach(el => el.setAttribute('visible', s)); }); }
 
-        document.getElementById('btn-start').addEventListener('click', async () => {
+        document.getElementById('start-btn').addEventListener('click', async () => {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
             document.querySelectorAll('.webcam').forEach(v => { v.srcObject = stream; v.play(); });
-            document.getElementById('btn-start').style.display = 'none';
-            const vid = document.querySelector('.webcam');
-            function run() { if (vid.readyState >= 2) hands.send({image: vid}); requestAnimationFrame(run); }
+            document.getElementById('start-btn').style.display = 'none';
+            function run() { if (document.querySelector('.webcam').readyState >= 2) hands.send({image: document.querySelector('.webcam')}); requestAnimationFrame(run); }
             setTimeout(run, 1000);
         });
     </script>
