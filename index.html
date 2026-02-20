@@ -3,89 +3,89 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 2.5 - VR Split Fixed</title>
+    <title>AeroVision 3.0 - World-Locked</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
     <style>
         body { margin: 0; overflow: hidden; background: #000; display: flex; }
-        .viewport { 
-            width: 50vw; height: 100vh; position: relative; 
-            overflow: hidden; border-right: 1px solid #333; 
-        }
-        video.webcam { 
-            position: absolute; top: 50%; left: 50%; 
-            min-width: 100%; min-height: 100%; 
-            transform: translate(-50%, -50%); 
-            object-fit: cover; z-index: 1; 
-        }
-        a-scene { 
-            position: absolute; top: 0; left: 0; 
-            width: 100%; height: 100%; z-index: 2; 
-        }
-        #start-btn { 
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            padding: 30px 60px; background: #00AAFF; color: white; border: none; 
-            border-radius: 15px; z-index: 10000; font-weight: bold; font-size: 1.5rem; 
-        }
+        .viewport { width: 50vw; height: 100vh; position: relative; overflow: hidden; border-right: 1px solid #333; }
+        video.webcam { position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%; transform: translate(-50%, -50%); object-fit: cover; z-index: 1; }
+        a-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; background: transparent; }
+        #start-btn { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 30px; background: #00AAFF; color: white; border: none; border-radius: 15px; z-index: 10000; font-weight: bold; font-size: 1.2rem; }
     </style>
 </head>
 <body>
 
-    <button id="start-btn">INICIAR AERovision 2.5</button>
+    <button id="start-btn">INICIAR ÂNCORA ESPACIAL</button>
 
     <div class="viewport">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-sphere class="reset-zone" position="-1.2 1.1 -2.5" radius="0.1" color="red">
-                <a-text value="RESET" align="center" position="0 -0.15 0" width="1.5"></a-text>
-            </a-sphere>
-            <a-text class="status-txt" value="ESCOLHA O MODO" position="0 0.9 -2.5" align="center" width="2.5"></a-text>
-            
-            <a-entity class="menu-ui">
-                <a-entity position="-0.5 0.3 -2">
-                    <a-box class="btn-l" color="#00AAFF" scale="0.5 0.3 0.1"></a-box>
-                    <a-text value="APRENDIZADO" align="center" position="0 0 0.06" width="2"></a-text>
-                </a-entity>
-                <a-entity position="0.5 0.3 -2">
-                    <a-box class="btn-s" color="#FFD700" scale="0.5 0.3 0.1"></a-box>
-                    <a-text value="SIMULADO" align="center" position="0 0 0.06" width="2" color="black"></a-text>
+            <a-entity camera look-controls="enabled: true">
+                <a-sphere class="reset-trigger" position="-1.2 1 -2.5" radius="0.08" color="red">
+                    <a-text value="RESET" align="center" position="0 -0.15 0" width="1.5"></a-text>
+                </a-sphere>
+                <a-text class="status-label" value="ESCOLHA O MODO" position="0 0.8 -2.5" align="center" width="2.5"></a-text>
+                <a-sphere class="hand-cursor" radius="0.05" color="red" position="10 10 -2"></a-sphere>
+
+                <a-entity class="menu-root">
+                    <a-entity position="-0.6 0.2 -2">
+                        <a-box class="btn-l" scale="0.4 0.2 0.05" color="#00AAFF"></a-box>
+                        <a-text value="APRENDIZADO" align="center" position="0 0 0.06" width="2"></a-text>
+                    </a-entity>
+                    <a-entity position="0.6 0.2 -2">
+                        <a-box class="btn-s" scale="0.4 0.2 0.05" color="#FFD700"></a-box>
+                        <a-text value="SIMULADO" align="center" position="0 0 0.06" width="2" color="black"></a-text>
+                    </a-entity>
                 </a-entity>
             </a-entity>
 
-            <a-entity class="p1-obj" position="-0.7 0 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
-            <a-entity class="b1-obj" position="0.7 -0.2 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#FFF" height="0.6" radius="0.07" opacity="0.2"></a-cylinder></a-entity>
-            <a-entity class="p2-obj" position="-0.7 -0.4 -2.5" visible="false"><a-torus color="#0066FF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
-            <a-entity class="b2-obj" position="0.7 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
+            <a-entity id="world-root-l" position="0 -0.5 -4">
+                <a-entity class="p1-world" position="-1 0 0" rotation="0 0 90" visible="false">
+                    <a-cylinder color="#777" height="0.8" radius="0.06"></a-cylinder>
+                </a-entity>
+                <a-entity class="b1-world" position="1 0 0" rotation="0 0 90" visible="false">
+                    <a-cylinder color="#FFF" height="0.8" radius="0.08" opacity="0.2"></a-cylinder>
+                </a-entity>
 
-            <a-sphere class="hand-dot" radius="0.05" color="red" position="10 10 10"></a-sphere>
-            <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-            <a-light type="ambient" intensity="1.2"></a-light>
+                <a-entity class="p2-world" position="-1 -0.5 1" visible="false">
+                    <a-torus color="#0066FF" radius="0.3" radius-tubular="0.02" rotation="90 0 0"></a-torus>
+                </a-entity>
+                <a-entity class="b2-world" position="1 0 0" visible="false">
+                    <a-torus color="#FFF" radius="0.3" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus>
+                </a-entity>
+            </a-entity>
+            
+            <a-light type="ambient" intensity="1.5"></a-light>
         </a-scene>
     </div>
 
     <div class="viewport" style="border-right: none;">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-sphere class="reset-zone" position="-1.2 1.1 -2.5" radius="0.1" color="red"><a-text value="RESET" align="center" position="0 -0.15 0" width="1.5"></a-text></a-sphere>
-            <a-text class="status-txt" value="ESCOLHA O MODO" position="0 0.9 -2.5" align="center" width="2.5"></a-text>
-            <a-entity class="menu-ui">
-                <a-entity position="-0.5 0.3 -2">
-                    <a-box color="#00AAFF" scale="0.5 0.3 0.1"></a-box>
-                    <a-text value="APRENDIZADO" align="center" position="0 0 0.06" width="2"></a-text>
-                </a-entity>
-                <a-entity position="0.5 0.3 -2">
-                    <a-box color="#FFD700" scale="0.5 0.3 0.1"></a-box>
-                    <a-text value="SIMULADO" align="center" position="0 0 0.06" width="2" color="black"></a-text>
+            <a-entity camera look-controls="enabled: true">
+                <a-sphere class="reset-trigger" position="-1.2 1 -2.5" radius="0.08" color="red"></a-sphere>
+                <a-text class="status-label" value="ESCOLHA O MODO" position="0 0.8 -2.5" align="center" width="2.5"></a-text>
+                <a-sphere class="hand-cursor" radius="0.05" color="red" position="10 10 -2"></a-sphere>
+                <a-entity class="menu-root">
+                    <a-entity position="-0.6 0.2 -2">
+                        <a-box scale="0.4 0.2 0.05" color="#00AAFF"></a-box>
+                        <a-text value="APRENDIZADO" align="center" position="0 0 0.06" width="2"></a-text>
+                    </a-entity>
+                    <a-entity position="0.6 0.2 -2">
+                        <a-box scale="0.4 0.2 0.05" color="#FFD700"></a-box>
+                        <a-text value="SIMULADO" align="center" position="0 0 0.06" width="2" color="black"></a-text>
+                    </a-entity>
                 </a-entity>
             </a-entity>
-            <a-entity class="p1-obj" position="-0.7 0 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
-            <a-entity class="b1-obj" position="0.7 -0.2 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#FFF" height="0.6" radius="0.07" opacity="0.2"></a-cylinder></a-entity>
-            <a-entity class="p2-obj" position="-0.7 -0.4 -2.5" visible="false"><a-torus color="#0066FF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
-            <a-entity class="b2-obj" position="0.7 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
-            <a-sphere class="hand-dot" radius="0.05" color="red" position="10 10 10"></a-sphere>
-            <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-            <a-light type="ambient" intensity="1.2"></a-light>
+            <a-entity id="world-root-r" position="0 -0.5 -4">
+                <a-entity class="p1-world" position="-1 0 0" rotation="0 0 90" visible="false"><a-cylinder color="#777" height="0.8" radius="0.06"></a-cylinder></a-entity>
+                <a-entity class="b1-world" position="1 0 0" rotation="0 0 90" visible="false"><a-cylinder color="#FFF" height="0.8" radius="0.08" opacity="0.2"></a-cylinder></a-entity>
+                <a-entity class="p2-world" position="-1 -0.5 1" visible="false"><a-torus color="#0066FF" radius="0.3" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
+                <a-entity class="b2-world" position="1 0 0" visible="false"><a-torus color="#FFF" radius="0.3" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
+            </a-entity>
+            <a-light type="ambient" intensity="1.5"></a-light>
         </a-scene>
     </div>
 
@@ -93,105 +93,114 @@
         const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
         hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 
-        let appState = "MENU"; let gameMode = ""; let step = 1;
+        let state = "MENU"; let mode = ""; let step = 1;
         let errors = 0; let startTime = 0; let grabbing = false;
-        let p1Pos = {x:-0.7, y:0}; let p2Pos = {x:-0.7, y:-0.4};
-        const targetPos = {x:0.7, y:-0.2};
+        let p1Pos = {x:-1, y:0, z:0}; let p2Pos = {x:-1, y:-0.5, z:1};
+        const targetPos = {x:1, y:0, z:0};
 
         hands.onResults((res) => {
             if (!res.multiHandLandmarks || res.multiHandLandmarks.length === 0) {
-                document.querySelectorAll('.hand-dot').forEach(h => h.setAttribute('position', '10 10 10'));
+                document.querySelectorAll('.hand-cursor').forEach(h => h.setAttribute('position', '10 10 -2'));
                 return;
             }
 
             const h = res.multiHandLandmarks[0];
-            const x = (h[8].x - 0.5) * 4.5; 
-            const y = (0.5 - h[8].y) * 3;
+            const x = (h[8].x - 0.5) * 4; const y = (0.5 - h[8].y) * 3;
             const pinch = Math.sqrt(Math.pow(h[4].x - h[8].x, 2) + Math.pow(h[4].y - h[8].y, 2));
             
-            document.querySelectorAll('.hand-dot').forEach(dot => dot.setAttribute('position', `${x} ${y} -2.2`));
+            document.querySelectorAll('.hand-cursor').forEach(dot => dot.setAttribute('position', `${x} ${y} -2`));
 
-            // RESET
-            if (x < -1.1 && y > 0.9 && pinch < 0.1) softReset();
+            // 1. RESET SOFT (Superior Esquerdo)
+            if (x < -1.0 && y > 0.9 && pinch < 0.1) softReset();
 
-            // MENU
-            if (appState === "MENU" && pinch < 0.1) {
-                if (x < 0 && Math.abs(y-0.3) < 0.35) initGame("learn");
-                if (x > 0 && Math.abs(y-0.3) < 0.35) initGame("sim");
-                return;
+            // 2. LÓGICA DE MENU (Agora com as áreas corrigidas)
+            if (state === "MENU" && pinch < 0.1) {
+                if (x < -0.2 && Math.abs(y-0.2) < 0.3) initGame("learn");
+                if (x > 0.2 && Math.abs(y-0.2) < 0.3) initGame("sim");
             }
 
-            // GAMEPLAY
-            if (appState === "PLAY") {
-                let id = step === 1 ? 'p1' : 'p2';
-                let currentP = step === 1 ? p1Pos : p2Pos;
-                const distToPiece = Math.sqrt(Math.pow(x - currentP.x, 2) + Math.pow(y - currentP.y, 2));
+            // 3. JOGABILIDADE TÉCNICA
+            if (state === "PLAY") {
+                const activeId = step === 1 ? 'p1-world' : 'p2-world';
+                const currentP = step === 1 ? p1Pos : p2Pos;
+                
+                // Mapeamos a mão (que está no olho) para o mundo
+                const dist = Math.sqrt(Math.pow(x - currentP.x, 2) + Math.pow(y - currentP.y, 2));
 
-                if (pinch < 0.08 && distToPiece < 0.5) {
+                if (pinch < 0.08 && dist < 0.8) {
                     grabbing = true;
                     currentP.x = x; currentP.y = y;
-                    updatePositions(id, x, y);
+                    updateWorldPositions(activeId, x, y);
+                    if (mode === "learn") updateGlow(step, true);
                 } else if (grabbing) {
                     grabbing = false;
                     const distToTarget = Math.sqrt(Math.pow(currentP.x - targetPos.x, 2) + Math.pow(currentP.y - targetPos.y, 2));
-                    if (distToTarget < 0.4) snap(id);
-                    else if (gameMode === "sim") fail(id);
+                    if (distToTarget < 0.5) snap(activeId);
+                    else {
+                        if (mode === "sim") {
+                            errors++;
+                            updateUI(`ERRO! POSIÇÃO INCORRETA (${errors})`, "red");
+                            resetPiece(activeId);
+                        }
+                    }
                 }
             }
         });
 
         function initGame(m) {
-            appState = "PLAY"; gameMode = m; step = 1; errors = 0; startTime = Date.now();
-            document.querySelectorAll('.menu-ui').forEach(el => el.setAttribute('visible', 'false'));
-            updateUI(m === "learn" ? "APRENDIZADO: SIGA O BRILHO" : "SIMULADO: MONTE RÁPIDO", "#FFF");
-            showByClass('p1-obj', true); showByClass('b1-obj', true);
-            if (m === "sim") showByClass('p2-obj', true);
-        }
-
-        function snap(id) {
-            updatePositions(id, targetPos.x, targetPos.y);
-            document.querySelectorAll(`.${id}-obj *`).forEach(el => el.setAttribute('color', '#32CD32'));
-            if (step === 1) {
-                step = 2;
-                updateUI("PASSO 2: A CARCAÇA", "#FFF");
-                showByClass('p2-obj', true); showByClass('b2-obj', true);
-                showByClass('b1-obj', false);
-            } else {
-                finish();
+            state = "PLAY"; mode = m; step = 1; errors = 0; startTime = Date.now();
+            document.querySelectorAll('.menu-root').forEach(el => el.setAttribute('visible', 'false'));
+            updateUI(m === "learn" ? "MODO APRENDIZADO: GUIADO" : "MODO SIMULADO: PERFORMANCE", "white");
+            
+            showByClass('p1-world', true); showByClass('b1-world', true);
+            if (m === "sim") {
+                showByClass('p2-world', true); // No simulado, a carcaça já está lá para confundir
             }
         }
 
-        function fail(id) {
-            errors++;
-            updateUI(`ERRO! VOLTANDO PEÇA... (${errors})`, "#FF4B4B");
-            const rx = -0.7; const ry = (id === 'p1' ? 0 : -0.4);
-            if(id === 'p1') { p1Pos.x = rx; p1Pos.y = ry; } else { p2Pos.x = rx; p2Pos.y = ry; }
+        function snap(id) {
+            updateWorldPositions(id, targetPos.x, targetPos.y);
+            document.querySelectorAll(`.${id} *`).forEach(el => el.setAttribute('color', '#32CD32'));
+            if (step === 1) {
+                step = 2;
+                updateUI("PASSO 2: INSTALE A CARCAÇA", "white");
+                showByClass('p2-world', true); showByClass('b2-world', true);
+                showByClass('b1-world', false);
+            } else {
+                finishGame();
+            }
+        }
+
+        function resetPiece(id) {
+            const rx = -1; const ry = id.includes('p1') ? 0 : -0.5;
+            if(id.includes('p1')) { p1Pos.x = rx; p1Pos.y = ry; } else { p2Pos.x = rx; p2Pos.y = ry; }
             setTimeout(() => {
-                updatePositions(id, rx, ry);
-                updateUI(gameMode === "learn" ? "MODO APRENDIZADO" : "MODO SIMULADO", "#FFF");
+                updateWorldPositions(id, rx, ry);
+                updateUI(mode === "learn" ? "APRENDIZADO" : "SIMULADO", "white");
             }, 1000);
         }
 
-        function finish() {
-            appState = "END";
+        function finishGame() {
+            state = "END";
             const time = Math.floor((Date.now() - startTime)/1000);
-            updateUI(`MISSÃO COMPLETA!\nTEMPO: ${time}s | ERROS: ${errors}`, "#32CD32");
+            updateUI(`CONCLUÍDO!\nTempo: ${time}s | Erros: ${errors}`, "#32CD32");
         }
 
         function softReset() {
-            appState = "MENU"; step = 1; grabbing = false; errors = 0;
-            p1Pos = {x:-0.7, y:0}; p2Pos = {x:-0.7, y:-0.4};
-            document.querySelectorAll('.menu-ui').forEach(el => el.setAttribute('visible', 'true'));
-            showByClass('p1-obj', false); showByClass('p2-obj', false);
-            showByClass('b1-obj', false); showByClass('b2-obj', false);
-            updateUI("ESCOLHA O MODO", "#FFF");
-            document.querySelectorAll('.p1-obj *').forEach(e => e.setAttribute('color', '#777'));
-            document.querySelectorAll('.p2-obj *').forEach(e => e.setAttribute('color', '#0066FF'));
+            state = "MENU"; step = 1; grabbing = false; errors = 0;
+            p1Pos = {x:-1, y:0, z:0}; p2Pos = {x:-1, y:-0.5, z:1};
+            document.querySelectorAll('.menu-root').forEach(el => el.setAttribute('visible', 'true'));
+            showByClass('p1-world', false); showByClass('p2-world', false);
+            showByClass('b1-world', false); showByClass('b2-world', false);
+            updateUI("ESCOLHA O MODO", "white");
+            document.querySelectorAll('.p1-world *').forEach(e => e.setAttribute('color', '#777'));
+            document.querySelectorAll('.p2-world *').forEach(e => e.setAttribute('color', '#0066FF'));
         }
 
-        function updatePositions(cls, x, y) { document.querySelectorAll(`.${cls}-obj`).forEach(el => el.setAttribute('position', `${x} ${y} -2.5`)); }
-        function updateUI(m, c) { document.querySelectorAll('.status-txt').forEach(t => { t.setAttribute('value', m); t.setAttribute('color', c); }); }
+        function updateWorldPositions(cls, x, y) { document.querySelectorAll(`.${cls}`).forEach(el => el.setAttribute('position', `${x} ${y} 0`)); }
+        function updateUI(m, c) { document.querySelectorAll('.status-label').forEach(t => { t.setAttribute('value', m); t.setAttribute('color', c); }); }
         function showByClass(cls, s) { document.querySelectorAll(`.${cls}`).forEach(el => el.setAttribute('visible', s)); }
+        function updateGlow(s, act) { document.querySelectorAll(`.b${s}-world`).forEach(el => el.setAttribute('opacity', act ? 0.6 : 0.2)); }
 
         document.getElementById('start-btn').addEventListener('click', async () => {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
