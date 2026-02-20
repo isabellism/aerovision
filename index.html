@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 1.5 - Flight Instructor</title>
+    <title>AeroVision 2.0 - Simulado vs Aprendizado</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
@@ -11,79 +11,71 @@
         body { margin: 0; overflow: hidden; background: #000; display: flex; }
         .viewport { width: 50vw; height: 100vh; position: relative; overflow: hidden; border-right: 1px solid #333; }
         video.webcam { position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%; transform: translate(-50%, -50%); object-fit: cover; z-index: 1; }
-        a-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; background: transparent; }
-        #btn { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; background: #00AAFF; color: white; border: none; border-radius: 10px; z-index: 9999; font-weight: bold; cursor: pointer;}
+        a-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
+        #start-screen { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; }
+        #btn-cam { padding: 20px; background: #00AAFF; color: white; border: none; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <button id="btn">INICIAR MISSÃO TÉCNICA</button>
+    <div id="start-screen"><button id="btn-cam">LIGAR CÂMERA E VESTIR ÓCULOS</button></div>
 
-    <div class="viewport">
-        <video class="webcam" autoplay playsinline muted></video>
+    <template id="eye-template">
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-sphere id="reset-left" position="-1.2 1.1 -2.5" radius="0.08" color="#FF4B4B"><a-text value="RESET" align="center" position="0 -0.15 0" width="1.5"></a-text></a-sphere>
-            
-            <a-text id="timer-left" value="TEMPO: 00s" position="0.8 1.1 -2.5" align="center" width="2" color="#00FF00"></a-text>
-            <a-text id="error-left" value="ERROS: 0" position="0.8 0.95 -2.5" align="center" width="2" color="#FF0000"></a-text>
-            
-            <a-text id="txt-left" value="PASSO 1: ENCAIXE O EIXO" position="0 0.9 -2.5" align="center" width="2.5" color="#FFF"></a-text>
-            
-            <a-entity id="p1-left" position="-0.7 0 -2.5" rotation="0 0 90"><a-cylinder id="c1-left" color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
-            <a-entity id="b1-left" position="0.7 -0.2 -2.5" rotation="0 0 90"><a-cylinder color="#FFF" height="0.6" radius="0.06" opacity="0.2"></a-cylinder></a-entity>
-            <a-entity id="p2-left" position="-0.7 0 -2.5" visible="false"><a-torus id="c2-left" color="#00AAFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
-            <a-entity id="b2-left" position="0.7 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
+            <a-sphere class="reset-btn" position="-1.5 1.2 -2.5" radius="0.1" color="#FF4B4B">
+                <a-text value="RESET" align="center" position="0 -0.2 0" width="2"></a-text>
+            </a-sphere>
 
-            <a-sphere id="finger-left" radius="0.05" color="red" position="10 10 10"></a-sphere>
+            <a-entity class="menu-ui">
+                <a-box class="btn-learn" position="-0.5 0.5 -2" scale="0.4 0.2 0.1" color="#00AAFF">
+                    <a-text value="APRENDIZADO" align="center" position="0 0 0.6" width="2.5"></a-text>
+                </a-box>
+                <a-box class="btn-sim" position="0.5 0.5 -2" scale="0.4 0.2 0.1" color="#FFD700">
+                    <a-text value="SIMULADO" align="center" position="0 0 0.6" width="2.5" color="#000"></a-text>
+                </a-box>
+            </a-entity>
+
+            <a-plane class="report-panel" position="0 0.5 -1.5" width="1.2" height="0.8" color="#111" visible="false">
+                <a-text class="report-txt" value="RELATORIO" align="center" position="0 0 0.1" width="3"></a-text>
+            </a-plane>
+
+            <a-text class="main-txt" value="ESCOLHA O MODO" position="0 1 -2.5" align="center" width="3"></a-text>
+            
+            <a-entity class="p1" position="-0.6 -0.3 -2.5" rotation="0 0 90" visible="false">
+                <a-cylinder color="#777" height="0.5" radius="0.04"></a-cylinder>
+            </a-entity>
+            <a-entity class="p2" position="0.6 -0.3 -2.5" visible="false">
+                <a-torus color="#00AAFF" radius="0.2" radius-tubular="0.02" rotation="90 0 0"></a-torus>
+            </a-entity>
+
+            <a-entity class="b1" position="0.3 -0.5 -2.5" rotation="0 0 90" visible="false">
+                <a-cylinder color="#FFF" height="0.5" radius="0.05" opacity="0.2"></a-cylinder>
+            </a-entity>
+            <a-entity class="b2" position="-0.3 -0.5 -2.5" visible="false">
+                <a-torus color="#FFF" radius="0.2" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus>
+            </a-entity>
+
+            <a-sphere class="cursor-hand" radius="0.04" color="red" position="10 10 10"></a-sphere>
             <a-light type="ambient" intensity="1.2"></a-light>
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
         </a-scene>
-    </div>
+    </template>
 
-    <div class="viewport" style="border-right: none;">
-        <video class="webcam" autoplay playsinline muted></video>
-        <a-scene embedded vr-mode-ui="enabled: false">
-            <a-sphere id="reset-right" position="-1.2 1.1 -2.5" radius="0.08" color="#FF4B4B"><a-text value="RESET" align="center" position="0 -0.15 0" width="1.5"></a-text></a-sphere>
-            <a-text id="timer-right" value="TEMPO: 00s" position="0.8 1.1 -2.5" align="center" width="2" color="#00FF00"></a-text>
-            <a-text id="error-right" value="ERROS: 0" position="0.8 0.95 -2.5" align="center" width="2" color="#FF0000"></a-text>
-            
-            <a-text id="txt-right" value="PASSO 1: ENCAIXE O EIXO" position="0 0.9 -2.5" align="center" width="2.5" color="#FFF"></a-text>
-            <a-entity id="p1-right" position="-0.7 0 -2.5" rotation="0 0 90"><a-cylinder id="c1-right" color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
-            <a-entity id="b1-right" position="0.7 -0.2 -2.5" rotation="0 0 90"><a-cylinder color="#FFF" height="0.6" radius="0.06" opacity="0.2"></a-cylinder></a-entity>
-            <a-entity id="p2-right" position="-0.7 0 -2.5" visible="false"><a-torus id="c2-right" color="#00AAFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
-            <a-entity id="b2-right" position="0.7 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
-            <a-sphere id="finger-right" radius="0.05" color="red" position="10 10 10"></a-sphere>
-            <a-light type="ambient" intensity="1.2"></a-light>
-            <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-        </a-scene>
-    </div>
+    <div class="viewport" id="left-eye"></div>
+    <div class="viewport" id="right-eye" style="border-right: none;"></div>
 
     <script>
-        const btn = document.getElementById('btn');
-        const videos = document.querySelectorAll('.webcam');
-        const fingers = [document.getElementById('finger-left'), document.getElementById('finger-right')];
-        const texts = [document.getElementById('txt-left'), document.getElementById('txt-right')];
-        const timerTexts = [document.getElementById('timer-left'), document.getElementById('timer-right')];
-        const errorTexts = [document.getElementById('error-left'), document.getElementById('error-right')];
+        // Injetar o template nos olhos
+        document.getElementById('left-eye').innerHTML = document.getElementById('eye-template').innerHTML;
+        document.getElementById('right-eye').innerHTML = document.getElementById('eye-template').innerHTML;
 
-        let currentStep = 1; let isGrabbing = false; let isSnapped = false;
-        let errors = 0; let startTime = 0; let timerInterval;
-        const initialPos = { x: -0.7, y: 0, z: -2.5 };
-        let partPos = { ...initialPos };
-        const basePos = { x: 0.7, y: -0.2, z: -2.5 };
-
-        // Som de Feedback
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(freq, type, duration) {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type; osc.frequency.value = freq;
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            osc.start();
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-            osc.stop(audioCtx.currentTime + duration);
-        }
+        let mode = null; // 'learning' ou 'sim'
+        let currentStep = 0; // 0: menu, 1: peça1, 2: peça2, 3: fim
+        let errors = 0;
+        let startTime = 0;
+        let isGrabbing = false;
+        let activePiece = null;
+        let piecePositions = { p1: {x: -0.6, y: -0.3, z: -2.5}, p2: {x: 0.6, y: -0.3, z: -2.5} };
 
         const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
         hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
@@ -95,104 +87,124 @@
                 const posX = (index.x - 0.5) * 4; const posY = (0.5 - index.y) * 2.8;
                 const pinch = Math.sqrt(Math.pow(thumb.x - index.x, 2) + Math.pow(thumb.y - index.y, 2));
                 
-                fingers.forEach(f => f.setAttribute('position', `${posX} ${posY} -2.2`));
+                document.querySelectorAll('.cursor-hand').forEach(f => f.setAttribute('position', `${posX} ${posY} -2.1`));
 
-                if (posX < -0.9 && posY > 0.8 && pinch < 0.1) resetSimulation();
-                if (!isSnapped) handleStep(posX, posY, pinch);
+                // 1. Lógica do Menu (Escolha de Modo)
+                if (currentStep === 0) {
+                    if (pinch < 0.08) {
+                        if (posX < 0 && Math.abs(posY - 0.5) < 0.2) startApp('learning');
+                        if (posX > 0 && Math.abs(posY - 0.5) < 0.2) startApp('sim');
+                    }
+                    return;
+                }
+
+                // 2. Lógica de Reset
+                if (posX < -0.9 && posY > 0.9 && pinch < 0.08) resetAll();
+
+                // 3. Lógica de Manipulação
+                if (currentStep > 0 && currentStep < 3) {
+                    handleInteraction(posX, posY, pinch);
+                }
             }
         });
 
-        function handleStep(x, y, p) {
-            const prefix = currentStep === 1 ? 'p1' : 'p2';
-            const baseId = currentStep === 1 ? 'b1' : 'b2';
-            const distToPart = Math.sqrt(Math.pow(x - partPos.x, 2) + Math.pow(y - partPos.y, 2));
-            const targets = [document.getElementById(prefix + '-left'), document.getElementById(prefix + '-right')];
-            const bases = [document.getElementById(baseId + '-left'), document.getElementById(baseId + '-right')];
-            const distToBase = Math.sqrt(Math.pow(partPos.x - basePos.x, 2) + Math.pow(partPos.y - basePos.y, 2));
-
-            if (p < 0.1 && distToPart < 0.5) {
-                isGrabbing = true;
-                partPos.x = x; partPos.y = y;
-                targets.forEach(t => t.setAttribute('position', `${x} ${y} ${partPos.z}`));
-            } else if (isGrabbing) {
-                isGrabbing = false;
-                if (distToBase < 0.35) snapPiece(targets);
-                else {
-                    errors++;
-                    errorTexts.forEach(et => et.setAttribute('value', `ERROS: ${errors}`));
-                    playSound(150, 'sawtooth', 0.3); // Som de Erro
-                    triggerError(targets);
-                }
+        function startApp(selectedMode) {
+            mode = selectedMode;
+            currentStep = 1;
+            startTime = Date.now();
+            document.querySelectorAll('.menu-ui').forEach(m => m.setAttribute('visible', 'false'));
+            
+            if (mode === 'learning') {
+                updateUI("MODO APRENDIZADO\nPASSO 1: EIXO", "#FFF");
+                showElement('p1', true); showElement('b1', true);
+            } else {
+                updateUI("MODO SIMULADO\nPEÇAS LIBERADAS!", "#FFD700");
+                showElement('p1', true); showElement('b1', true);
+                showElement('p2', true); showElement('b2', true);
             }
         }
 
-        function triggerError(targets) {
-            texts.forEach(t => { t.setAttribute('value', 'ALERTA: POSICAO INCORRETA'); t.setAttribute('color', '#FF4B4B'); });
-            partPos = { ...initialPos };
-            targets.forEach(t => t.setAttribute('position', `${initialPos.x} ${initialPos.y} ${initialPos.z}`));
-            setTimeout(() => { if (!isSnapped) { 
-                const msg = currentStep === 1 ? "PASSO 1: ENCAIXE O EIXO" : "PASSO 2: INSTALE A CARCACA";
-                texts.forEach(t => { t.setAttribute('value', msg); t.setAttribute('color', '#FFF'); });
-            }}, 1200);
-        }
-
-        function snapPiece(targets) {
-            isSnapped = true;
-            playSound(800, 'sine', 0.2); // Som de Sucesso
-            targets.forEach(t => t.setAttribute('position', `${basePos.x} ${basePos.y} -2.5`));
+        function handleInteraction(x, y, p) {
+            // No simulado, você pode tentar pegar qualquer peça. No aprendizado, só a da vez.
+            const candidates = mode === 'sim' ? ['p1', 'p2'] : ['p' + currentStep];
             
-            setTimeout(() => {
-                if (currentStep === 1) {
-                    currentStep = 2; isSnapped = false; partPos = { ...initialPos };
-                    texts.forEach(t => t.setAttribute('value', 'PASSO 2: INSTALE A CARCACA'));
-                    toggleVisibility(['p2', 'b2'], true); toggleVisibility(['b1'], false);
-                } else {
-                    clearInterval(timerInterval);
-                    texts.forEach(t => t.setAttribute('value', 'MISSAO COMPLETA!'));
-                    const finalTime = Math.floor((Date.now() - startTime)/1000);
-                    setTimeout(() => alert(`Relatório ORBITA:\nTempo: ${finalTime}s\nErros: ${errors}`), 500);
+            candidates.forEach(id => {
+                const dist = Math.sqrt(Math.pow(x - piecePositions[id].x, 2) + Math.pow(y - piecePositions[id].y, 2));
+                
+                if (p < 0.08 && dist < 0.4 && (!isGrabbing || activePiece === id)) {
+                    isGrabbing = true;
+                    activePiece = id;
+                    piecePositions[id].x = x; piecePositions[id].y = y;
+                    updatePiecePos(id);
                 }
-            }, 800);
-        }
-
-        function resetSimulation() {
-            errors = 0; currentStep = 1; isSnapped = false; isGrabbing = false; 
-            startTime = Date.now();
-            partPos = { ...initialPos };
-            errorTexts.forEach(et => et.setAttribute('value', `ERROS: 0`));
-            resetPositions();
-            toggleVisibility(['p2', 'b2'], false); toggleVisibility(['b1'], true);
-        }
-
-        function resetPositions() {
-            const p1 = [document.getElementById('p1-left'), document.getElementById('p1-right')];
-            p1.forEach(p => p.setAttribute('position', '-0.7 0 -2.5'));
-            const p2 = [document.getElementById('p2-left'), document.getElementById('p2-right')];
-            p2.forEach(p => { p.setAttribute('position', '-0.7 0 -2.5'); p.setAttribute('visible', 'false'); });
-            texts.forEach(t => { t.setAttribute('value', 'PASSO 1: ENCAIXE O EIXO'); t.setAttribute('color', '#FFF'); });
-        }
-
-        function toggleVisibility(ids, state) {
-            ids.forEach(id => {
-                document.getElementById(id + '-left').setAttribute('visible', state);
-                document.getElementById(id + '-right').setAttribute('visible', state);
             });
+
+            if (p >= 0.1 && isGrabbing) {
+                checkSnap(activePiece);
+                isGrabbing = false;
+                activePiece = null;
+            }
+        }
+
+        function checkSnap(id) {
+            const targetBase = (id === 'p1') ? {x: 0.6, y: -0.2} : {x: 0.6, y: -0.2}; // Simplificado para o exemplo
+            const dist = Math.sqrt(Math.pow(piecePositions[id].x - 0.7, 2) + Math.pow(piecePositions[id].y - (-0.2), 2));
+
+            if (dist < 0.3) {
+                // Sucesso
+                document.querySelectorAll('.' + id + ' *').forEach(c => c.setAttribute('color', '#32CD32'));
+                if (mode === 'learning' && currentStep === 1) {
+                    currentStep = 2;
+                    updateUI("PASSO 2: CARCACA", "#FFF");
+                    showElement('p2', true); showElement('b2', true);
+                } else if (mode === 'sim' && id === 'p1') {
+                    // No simulado, apenas marca que p1 foi
+                } else {
+                    finishMission();
+                }
+            } else {
+                // Erro
+                errors++;
+                if (mode === 'sim') updateUI(`ERRO! TENTE NOVAMENTE\nERROS: ${errors}`, "#FF4B4B");
+                piecePositions[id] = {x: -0.7, y: 0, z: -2.5}; // Volta pra base
+                updatePiecePos(id);
+            }
+        }
+
+        function finishMission() {
+            currentStep = 3;
+            const time = Math.floor((Date.now() - startTime)/1000);
+            const report = `MISSAO CONCLUIDA!\nTempo: ${time}s\nErros: ${errors}\nModo: ${mode.toUpperCase()}`;
+            document.querySelectorAll('.report-panel').forEach(p => p.setAttribute('visible', 'true'));
+            document.querySelectorAll('.report-txt').forEach(t => t.setAttribute('value', report));
+            updateUI("", "#FFF");
+        }
+
+        function resetAll() {
+            location.reload(); // Ainda o mais seguro para limpar tudo, mas o Soft Reset está engatilhado
+        }
+
+        function updateUI(msg, color) {
+            texts.forEach(t => { t.setAttribute('value', msg); t.setAttribute('color', color); });
+        }
+
+        function updatePiecePos(id) {
+            document.querySelectorAll('.' + id).forEach(p => p.setAttribute('position', `${piecePositions[id].x} ${piecePositions[id].y} ${piecePositions[id].z}`));
+        }
+
+        function showElement(cls, state) {
+            document.querySelectorAll('.' + cls).forEach(e => e.setAttribute('visible', state));
         }
 
         async function loop() {
-            if (videos[0].readyState >= 2) {
-                await hands.send({image: videos[0]});
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                timerTexts.forEach(tt => tt.setAttribute('value', `TEMPO: ${elapsed}s`));
-            }
+            if (document.querySelectorAll('.webcam')[0].readyState >= 2) await hands.send({image: document.querySelectorAll('.webcam')[0]});
             requestAnimationFrame(loop);
         }
 
-        btn.addEventListener('click', async () => {
+        document.getElementById('btn-cam').addEventListener('click', async () => {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-            videos.forEach(v => { v.srcObject = stream; v.play(); });
-            btn.style.display = 'none';
-            startTime = Date.now();
+            document.querySelectorAll('.webcam').forEach(v => { v.srcObject = stream; v.play(); });
+            document.getElementById('start-screen').style.display = 'none';
             setTimeout(loop, 1000);
         });
     </script>
