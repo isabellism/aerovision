@@ -3,16 +3,16 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 2.1 - Final Ops</title>
+    <title>AeroVision 1.4 - Master Pro</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
     <style>
         body { margin: 0; overflow: hidden; background: #000; display: flex; }
-        .viewport { width: 50vw; height: 100vh; position: relative; overflow: hidden; border-right: 1px solid #333; }
+        .viewport { width: 50vw; height: 100vh; position: relative; overflow: hidden; border-right: 1px solid #444; }
         video.webcam { position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%; transform: translate(-50%, -50%); object-fit: cover; z-index: 1; }
-        a-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; background: transparent; }
-        #btn-start { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 25px; background: #00AAFF; color: white; border: none; border-radius: 15px; z-index: 10000; font-weight: bold; font-size: 1.2rem; }
+        a-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
+        #btn-start { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 25px 50px; background: #00AAFF; color: white; border: none; border-radius: 15px; z-index: 10000; font-weight: bold; font-size: 1.5rem; box-shadow: 0 0 20px rgba(0,170,255,0.5); }
     </style>
 </head>
 <body>
@@ -20,19 +20,24 @@
     <button id="btn-start">INICIAR AERovision</button>
 
     <div class="viewport">
-        <video class="webcam" id="v1" autoplay playsinline muted></video>
+        <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-sphere id="res-l" position="-1.2 1.1 -2.5" radius="0.1" color="red"><a-text value="RESET" align="center" position="0 -0.2 0" width="2"></a-text></a-sphere>
-            <a-text id="txt-l" value="ESCOLHA O MODO" position="0 0.9 -2.5" align="center" width="2.5"></a-text>
+            <a-entity id="hud-l">
+                <a-sphere id="res-l" position="-1.2 1.1 -2.5" radius="0.08" color="#FF0000"><a-text value="RESET" align="center" position="0 -0.15 0" width="1.5"></a-text></a-sphere>
+                <a-text id="txt-l" value="ESCOLHA O MODO" position="0 0.9 -2.5" align="center" width="2.5" color="#FFF"></a-text>
+            </a-entity>
             
-            <a-box id="m-learn-l" position="-0.5 0.3 -2" scale="0.4 0.2 0.1" color="#00AAFF"><a-text value="APRENDIZADO" align="center" width="2"></a-text></a-box>
-            <a-box id="m-sim-l" position="0.5 0.3 -2" scale="0.4 0.2 0.1" color="#FFD700"><a-text value="SIMULADO" align="center" width="2" color="black"></a-text></a-box>
+            <a-entity id="menu-l">
+                <a-box id="opt-learn-l" position="-0.5 0.3 -2" scale="0.4 0.2 0.1" color="#00AAFF"><a-text value="APRENDIZADO" align="center" width="2"></a-text></a-box>
+                <a-box id="opt-sim-l" position="0.5 0.3 -2" scale="0.4 0.2 0.1" color="#FFD700"><a-text value="SIMULADO" align="center" width="2" color="#000"></a-text></a-box>
+            </a-entity>
 
-            <a-entity id="p1-l" position="-0.6 0 -2.5" rotation="0 0 90" visible="false"><a-cylinder id="c1-l" color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
-            <a-entity id="p2-l" position="-0.6 -0.4 -2.5" visible="false"><a-torus id="c2-l" color="#00AAFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
-            
-            <a-entity id="b1-l" position="0.6 -0.2 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#FFF" height="0.6" radius="0.06" opacity="0.2"></a-cylinder></a-entity>
-            <a-entity id="b2-l" position="0.6 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
+            <a-entity id="stage-l">
+                <a-entity id="p1-l" position="-0.7 0 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
+                <a-entity id="b1-l" position="0.7 -0.2 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#FFF" height="0.6" radius="0.07" opacity="0.2"></a-cylinder></a-entity>
+                <a-entity id="p2-l" position="-0.7 -0.4 -2.5" visible="false"><a-torus color="#00AAFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
+                <a-entity id="b2-l" position="0.7 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
+            </a-entity>
 
             <a-sphere id="f-l" radius="0.05" color="red" position="10 10 10"></a-sphere>
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
@@ -40,126 +45,163 @@
     </div>
 
     <div class="viewport" style="border-right: none;">
-        <video class="webcam" id="v2" autoplay playsinline muted></video>
+        <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-sphere id="res-r" position="-1.2 1.1 -2.5" radius="0.1" color="red"><a-text value="RESET" align="center" position="0 -0.2 0" width="2"></a-text></a-sphere>
-            <a-text id="txt-r" value="ESCOLHA O MODO" position="0 0.9 -2.5" align="center" width="2.5"></a-text>
-            <a-box id="m-learn-r" position="-0.5 0.3 -2" scale="0.4 0.2 0.1" color="#00AAFF"><a-text value="APRENDIZADO" align="center" width="2"></a-text></a-box>
-            <a-box id="m-sim-r" position="0.5 0.3 -2" scale="0.4 0.2 0.1" color="#FFD700"><a-text value="SIMULADO" align="center" width="2" color="black"></a-text></a-box>
-            <a-entity id="p1-r" position="-0.6 0 -2.5" rotation="0 0 90"><a-cylinder id="c1-r" color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
-            <a-entity id="b1-r" position="0.6 -0.2 -2.5" rotation="0 0 90"><a-cylinder color="#FFF" height="0.6" radius="0.06" opacity="0.2"></a-cylinder></a-entity>
-            <a-entity id="p2-r" position="-0.6 -0.4 -2.5" visible="false"><a-torus id="c2-r" color="#00AAFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
-            <a-entity id="b2-r" position="0.6 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
+            <a-entity id="hud-r">
+                <a-sphere id="res-r" position="-1.2 1.1 -2.5" radius="0.08" color="#FF0000"><a-text value="RESET" align="center" position="0 -0.15 0" width="1.5"></a-text></a-sphere>
+                <a-text id="txt-r" value="ESCOLHA O MODO" position="0 0.9 -2.5" align="center" width="2.5" color="#FFF"></a-text>
+            </a-entity>
+
+            <a-entity id="menu-r">
+                <a-box id="opt-learn-r" position="-0.5 0.3 -2" scale="0.4 0.2 0.1" color="#00AAFF"><a-text value="APRENDIZADO" align="center" width="2"></a-text></a-box>
+                <a-box id="opt-sim-r" position="0.5 0.3 -2" scale="0.4 0.2 0.1" color="#FFD700"><a-text value="SIMULADO" align="center" width="2" color="#000"></a-text></a-box>
+            </a-entity>
+
+            <a-entity id="stage-r">
+                <a-entity id="p1-r" position="-0.7 0 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
+                <a-entity id="b1-r" position="0.7 -0.2 -2.5" rotation="0 0 90" visible="false"><a-cylinder color="#FFF" height="0.6" radius="0.07" opacity="0.2"></a-cylinder></a-entity>
+                <a-entity id="p2-r" position="-0.7 -0.4 -2.5" visible="false"><a-torus color="#00AAFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
+                <a-entity id="b2-r" position="0.7 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
+            </a-entity>
+
             <a-sphere id="f-r" radius="0.05" color="red" position="10 10 10"></a-sphere>
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
         </a-scene>
     </div>
 
     <script>
+        // Inicialização do MediaPipe
         const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
         hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 
-        let currentMode = null; 
-        let currentStep = 0; // 0=Menu, 1=P1, 2=P2
+        let state = "MENU"; // MENU, PLAY
+        let mode = ""; // learning, sim
+        let currentStep = 1;
         let isGrabbing = false;
-        let pos = { p1: {x:-0.7, y:0}, p2: {x:-0.7, y:-0.4} };
-        const targetPos = { x: 0.7, y: -0.2 };
+        let p1Pos = {x:-0.7, y:0}; let p2Pos = {x:-0.7, y:-0.4};
+        const targetPos = {x:0.7, y:-0.2};
 
         hands.onResults((res) => {
             if (res.multiHandLandmarks && res.multiHandLandmarks.length > 0) {
                 const h = res.multiHandLandmarks[0];
                 const x = (h[8].x - 0.5) * 4; const y = (0.5 - h[8].y) * 2.8;
-                const p = Math.sqrt(Math.pow(h[4].x - h[8].x, 2) + Math.pow(h[4].y - h[8].y, 2));
+                const pinch = Math.sqrt(Math.pow(h[4].x - h[8].x, 2) + Math.pow(h[4].y - h[8].y, 2));
                 
-                document.querySelectorAll('.cursor-hand, [id^="f-"]').forEach(f => f.setAttribute('position', `${x} ${y} -2.2`));
+                // Atualiza cursor de mão nos dois olhos
+                document.querySelectorAll('[id^="f-"]').forEach(f => f.setAttribute('position', `${x} ${y} -2.2`));
 
-                // RESET LOGIC
-                if (x < -1 && y > 0.9 && p < 0.1) resetGame();
+                // 1. Lógica do RESET (Hands-Free)
+                if (x < -1 && y > 0.9 && pinch < 0.1) resetAll();
 
-                // MENU LOGIC
-                if (currentStep === 0) {
-                    if (p < 0.1) {
-                        if (x < 0) startMode('learning');
-                        else if (x > 0) startMode('sim');
-                    }
+                // 2. Lógica do MENU
+                if (state === "MENU" && pinch < 0.1) {
+                    if (x < 0 && Math.abs(y - 0.3) < 0.3) initGame("learning");
+                    if (x > 0 && Math.abs(y - 0.3) < 0.3) initGame("sim");
                     return;
                 }
 
-                // PLAY LOGIC
-                const active = currentStep === 1 ? 'p1' : 'p2';
-                const dist = Math.sqrt(Math.pow(x - pos[active].x, 2) + Math.pow(y - pos[active].y, 2));
-                const distToTarget = Math.sqrt(Math.pow(x - targetPos.x, 2) + Math.pow(y - targetPos.y, 2));
+                // 3. Lógica de JOGO
+                if (state === "PLAY") {
+                    const active = currentStep === 1 ? 'p1' : 'p2';
+                    const activePos = currentStep === 1 ? p1Pos : p2Pos;
+                    const distToPiece = Math.sqrt(Math.pow(x - activePos.x, 2) + Math.pow(y - activePos.y, 2));
+                    const distToTarget = Math.sqrt(Math.pow(x - targetPos.x, 2) + Math.pow(y - targetPos.y, 2));
 
-                if (p < 0.1 && dist < 0.4) {
-                    isGrabbing = true;
-                    pos[active].x = x; pos[active].y = y;
-                    updateVisuals(active, x, y);
-                } else if (isGrabbing) {
-                    isGrabbing = false;
-                    if (distToTarget < 0.35) {
-                        snap(active);
-                    } else {
-                        error(active);
+                    // Brilho do alvo
+                    if (isGrabbing && distToTarget < 0.6) updateColor(`b${currentStep}`, "#FFD700");
+                    else updateColor(`b${currentStep}`, "#FFF");
+
+                    if (pinch < 0.08 && distToPartCheck(x, y)) {
+                        isGrabbing = true;
+                        updatePiecePos(x, y);
+                    } else if (isGrabbing) {
+                        isGrabbing = false;
+                        if (distToTarget < 0.35) snap();
+                        else fail();
                     }
                 }
             }
         });
 
-        function startMode(m) {
-            currentMode = m; currentStep = 1;
-            document.querySelectorAll('[id^="m-"]').forEach(el => el.setAttribute('visible', 'false'));
-            document.querySelectorAll('[id^="txt-"]').forEach(t => t.setAttribute('value', 'PASSO 1: O EIXO'));
-            document.querySelectorAll('[id^="p1-"], [id^="b1-"]').forEach(el => el.setAttribute('visible', 'true'));
-            if (m === 'sim') document.querySelectorAll('[id^="p2-"]').forEach(el => el.setAttribute('visible', 'true'));
+        function distToPartCheck(x, y) {
+            let active = currentStep === 1 ? p1Pos : p2Pos;
+            return Math.sqrt(Math.pow(x - active.x, 2) + Math.pow(y - active.y, 2)) < 0.5;
         }
 
-        function updateVisuals(id, x, y) {
-            document.querySelectorAll(`[id^="${id}-"]`).forEach(el => el.setAttribute('position', `${x} ${y} -2.5`));
+        function initGame(m) {
+            state = "PLAY"; mode = m;
+            document.querySelectorAll('[id^="menu-"]').forEach(m => m.setAttribute('visible', 'false'));
+            updateText("PASSO 1: O EIXO", "#FFF");
+            showHide(['p1', 'b1'], true);
+            if(mode === 'sim') showHide(['p2'], true); // No simulado as peças já aparecem
         }
 
-        function snap(id) {
-            document.querySelectorAll(`[id^="${id}-"]`).forEach(el => {
+        function updatePiecePos(x, y) {
+            let active = currentStep === 1 ? 'p1' : 'p2';
+            if(currentStep === 1) { p1Pos.x = x; p1Pos.y = y; } else { p2Pos.x = x; p2Pos.y = y; }
+            document.querySelectorAll(`[id^="${active}-"]`).forEach(el => el.setAttribute('position', `${x} ${y} -2.5`));
+        }
+
+        function snap() {
+            let active = currentStep === 1 ? 'p1' : 'p2';
+            document.querySelectorAll(`[id^="${active}-"]`).forEach(el => {
                 el.setAttribute('position', `${targetPos.x} ${targetPos.y} -2.5`);
                 el.querySelector('*').setAttribute('color', '#32CD32');
             });
             if (currentStep === 1) {
                 currentStep = 2;
-                document.querySelectorAll('[id^="txt-"]').forEach(t => t.setAttribute('value', 'PASSO 2: A CARCACA'));
-                document.querySelectorAll('[id^="p2-"], [id^="b2-"]').forEach(el => el.setAttribute('visible', 'true'));
+                updateText("PASSO 2: A CARCACA", "#FFF");
+                showHide(['p2', 'b2'], true);
+                showHide(['b1'], false);
             } else {
-                document.querySelectorAll('[id^="txt-"]').forEach(t => t.setAttribute('value', 'MISSAO COMPLETA!'));
+                updateText("MISSAO COMPLETA!", "#32CD32");
             }
         }
 
-        function error(id) {
-            document.querySelectorAll('[id^="txt-"]').forEach(t => { t.setAttribute('value', 'ERRO! POSICAO ERRADA'); t.setAttribute('color', 'red'); });
-            const oldPos = id === 'p1' ? {x:-0.7, y:0} : {x:-0.7, y:-0.4};
-            pos[id] = {...oldPos};
-            updateVisuals(id, oldPos.x, oldPos.y);
+        function fail() {
+            updateText("ERRO: POSICAO INCORRETA", "#FF4B4B");
+            let active = currentStep === 1 ? 'p1' : 'p2';
+            let resetPos = {x: -0.7, y: currentStep === 1 ? 0 : -0.4};
+            if(currentStep === 1) p1Pos = {...resetPos}; else p2Pos = {...resetPos};
+            
             setTimeout(() => {
-                document.querySelectorAll('[id^="txt-"]').forEach(t => t.setAttribute('color', 'white'));
+                updatePiecePos(resetPos.x, resetPos.y);
+                updateText(currentStep === 1 ? "PASSO 1: ENCAIXE O EIXO" : "PASSO 2: ENCAIXE A CARCACA", "#FFF");
             }, 1000);
         }
 
         function resetSimulation() {
-            // Esta função substitui o reload para ser hands-free
-            currentStep = 0; isGrabbing = false; isSnapped = false;
-            pos = { p1: {x:-0.7, y:0}, p2: {x:-0.7, y:-0.4} };
-            document.querySelectorAll('[id^="m-"]').forEach(el => el.setAttribute('visible', 'true'));
-            document.querySelectorAll('[id^="p1-"], [id^="p2-"], [id^="b1-"], [id^="b2-"]').forEach(el => el.setAttribute('visible', 'false'));
-            document.querySelectorAll('[id^="txt-"]').forEach(t => t.setAttribute('value', 'ESCOLHA O MODO'));
-            document.getElementById('c1-left').setAttribute('color', '#777');
-            document.getElementById('c1-right').setAttribute('color', '#777');
-            document.getElementById('c2-left').setAttribute('color', '#00AAFF');
-            document.getElementById('c2-right').setAttribute('color', '#00AAFF');
+            currentStep = 1; state = "MENU"; isGrabbing = false;
+            p1Pos = {x:-0.7, y:0}; p2Pos = {x:-0.7, y:-0.4};
+            updateText("ESCOLHA O MODO", "#FFF");
+            document.querySelectorAll('[id^="menu-"]').forEach(m => m.setAttribute('visible', 'true'));
+            showHide(['p1','p2','b1','b2'], false);
+            document.querySelectorAll('[id^="c1-"], [id^="c2-"]').forEach(el => el.setAttribute('color', el.tagName === 'A-CYLINDER' ? '#777' : '#00AAFF'));
         }
 
-        const btnStart = document.getElementById('btn-start');
-        btnStart.addEventListener('click', async () => {
+        function updateText(msg, color) {
+            texts.forEach(t => { t.setAttribute('value', msg); t.setAttribute('color', color); });
+        }
+
+        function showHide(ids, state) {
+            ids.forEach(id => {
+                document.querySelectorAll(`[id^="${id}-"]`).forEach(el => el.setAttribute('visible', state));
+            });
+        }
+
+        function updateColor(id, color) {
+            document.querySelectorAll(`[id^="${id}-"]`).forEach(el => {
+                let obj = el.querySelector('*');
+                if(obj) obj.setAttribute('color', color);
+            });
+        }
+
+        btn.addEventListener('click', async () => {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
             document.querySelectorAll('.webcam').forEach(v => { v.srcObject = stream; v.play(); });
-            btnStart.style.display = 'none';
-            function run() { if (videos[0].readyState >= 2) hands.send({image: videos[0]}); requestAnimationFrame(run); }
+            btn.style.display = 'none';
+            const vid = document.querySelector('.webcam');
+            function run() { if (vid.readyState >= 2) hands.send({image: vid}); requestAnimationFrame(run); }
             setTimeout(run, 1000);
         });
     </script>
