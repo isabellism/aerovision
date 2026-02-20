@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 1.2.2 - Mission Flow</title>
+    <title>AeroVision 1.3.1 - Error Logic</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
@@ -17,7 +17,7 @@
 </head>
 <body>
 
-    <button id="btn">INICIAR MISSÃO 1.2.2</button>
+    <button id="btn">INICIAR TREINO 1.3.1</button>
 
     <div class="viewport">
         <video class="webcam" autoplay playsinline muted></video>
@@ -25,17 +25,17 @@
             <a-sphere id="reset-left" position="-0.7 0.7 -2" radius="0.08" color="#FF4B4B"></a-sphere>
             <a-text id="txt-left" value="PASSO 1: ENCAIXE O EIXO" position="0 0.8 -2.2" align="center" width="2.5"></a-text>
             
-            <a-entity id="p1-left" position="-0.5 0 -2.5" rotation="0 0 90">
-                <a-cylinder color="#777" height="0.6" radius="0.05"></a-cylinder>
+            <a-entity id="p1-left" position="-0.6 0 -2.5" rotation="0 0 90">
+                <a-cylinder id="c1-left" color="#777" height="0.6" radius="0.05"></a-cylinder>
             </a-entity>
-            <a-entity id="b1-left" position="0.5 -0.2 -2.5" rotation="0 0 90">
+            <a-entity id="b1-left" position="0.6 -0.2 -2.5" rotation="0 0 90">
                 <a-cylinder color="#FFF" height="0.6" radius="0.06" opacity="0.2"></a-cylinder>
             </a-entity>
 
-            <a-entity id="p2-left" position="-0.5 0 -2.5" visible="false">
-                <a-torus color="#00AAFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus>
+            <a-entity id="p2-left" position="-0.6 0 -2.5" visible="false">
+                <a-torus id="c2-left" color="#00AAFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus>
             </a-entity>
-            <a-entity id="b2-left" position="0.5 -0.2 -2.5" visible="false">
+            <a-entity id="b2-left" position="0.6 -0.2 -2.5" visible="false">
                 <a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus>
             </a-entity>
 
@@ -50,10 +50,10 @@
         <a-scene embedded vr-mode-ui="enabled: false">
             <a-sphere id="reset-right" position="-0.7 0.7 -2" radius="0.08" color="#FF4B4B"></a-sphere>
             <a-text id="txt-right" value="PASSO 1: ENCAIXE O EIXO" position="0 0.8 -2.2" align="center" width="2.5"></a-text>
-            <a-entity id="p1-right" position="-0.5 0 -2.5" rotation="0 0 90"><a-cylinder color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
-            <a-entity id="b1-right" position="0.5 -0.2 -2.5" rotation="0 0 90"><a-cylinder color="#FFF" height="0.6" radius="0.06" opacity="0.2"></a-cylinder></a-entity>
-            <a-entity id="p2-right" position="-0.5 0 -2.5" visible="false"><a-torus color="#00AAFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
-            <a-entity id="b2-right" position="0.5 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
+            <a-entity id="p1-right" position="-0.6 0 -2.5" rotation="0 0 90"><a-cylinder id="c1-right" color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
+            <a-entity id="b1-right" position="0.6 -0.2 -2.5" rotation="0 0 90"><a-cylinder color="#FFF" height="0.6" radius="0.06" opacity="0.2"></a-cylinder></a-entity>
+            <a-entity id="p2-right" position="-0.6 0 -2.5" visible="false"><a-torus id="c2-right" color="#00AAFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
+            <a-entity id="b2-right" position="0.6 -0.2 -2.5" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
             <a-sphere id="finger-right" radius="0.05" color="red" position="10 10 10"></a-sphere>
             <a-light type="ambient" intensity="1.2"></a-light>
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
@@ -68,9 +68,10 @@
         
         let currentStep = 1;
         let isGrabbing = false;
-        let posP1 = { x: -0.5, y: 0, z: -2.5 };
-        let posP2 = { x: -0.5, y: 0, z: -2.5 };
-        const basePos = { x: 0.5, y: -0.2, z: -2.5 };
+        let isSnapped = false;
+        const initialPos = { x: -0.6, y: 0, z: -2.5 };
+        let partPos = { ...initialPos };
+        const basePos = { x: 0.6, y: -0.2, z: -2.5 };
 
         const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
         hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
@@ -87,52 +88,99 @@
                 
                 fingers.forEach(f => f.setAttribute('position', `${posX} ${posY} -2.2`));
 
-                // Lógica de RESET (Bolinha vermelha)
-                if (posX < -0.6 && posY > 0.6 && pinch < 0.1) location.reload();
+                // Reset Virtual
+                if (posX < -0.5 && posY > 0.5 && pinch < 0.1) resetSimulation();
 
-                if (currentStep === 1) {
-                    handleStep(posX, posY, pinch, posP1, 'p1', 1);
-                } else if (currentStep === 2) {
-                    handleStep(posX, posY, pinch, posP2, 'p2', 2);
+                if (!isSnapped) {
+                    handleStep(posX, posY, pinch);
                 }
             }
         });
 
-        function handleStep(x, y, p, posObj, idPrefix, stepNum) {
-            const dist = Math.sqrt(Math.pow(x - posObj.x, 2) + Math.pow(y - posObj.y, 2));
-            const targets = [document.getElementById(idPrefix + '-left'), document.getElementById(idPrefix + '-right')];
+        function handleStep(x, y, p) {
+            const prefix = currentStep === 1 ? 'p1' : 'p2';
+            const baseId = currentStep === 1 ? 'b1' : 'b2';
+            const distToPart = Math.sqrt(Math.pow(x - partPos.x, 2) + Math.pow(y - partPos.y, 2));
+            const targets = [document.getElementById(prefix + '-left'), document.getElementById(prefix + '-right')];
+            const bases = [document.getElementById(baseId + '-left'), document.getElementById(baseId + '-right')];
 
-            if (p < 0.1 && dist < 0.4) {
+            // 1. Monitorizar Proximidade para Brilho
+            const distToBase = Math.sqrt(Math.pow(partPos.x - basePos.x, 2) + Math.pow(partPos.y - basePos.y, 2));
+            if (isGrabbing && distToBase < 0.6) {
+                bases.forEach(b => b.querySelector('*').setAttribute('color', '#FFD700')); // Alvo brilha em amarelo
+            } else {
+                bases.forEach(b => b.querySelector('*').setAttribute('color', '#FFF'));
+            }
+
+            // 2. Lógica de Agarrar
+            if (p < 0.1 && distToPart < 0.4) {
                 isGrabbing = true;
-                posObj.x = x; posObj.y = y;
-                targets.forEach(t => t.setAttribute('position', `${x} ${y} ${posObj.z}`));
+                partPos.x = x; partPos.y = y;
+                targets.forEach(t => t.setAttribute('position', `${x} ${y} ${partPos.z}`));
             } else if (isGrabbing) {
                 isGrabbing = false;
-                const distToBase = Math.sqrt(Math.pow(posObj.x - basePos.x, 2) + Math.pow(posObj.y - basePos.y, 2));
+                // 3. Lógica de Soltar: SNAP vs ERRO
                 if (distToBase < 0.3) {
-                    snapPiece(targets, idPrefix, stepNum);
+                    snapPiece(targets);
+                } else {
+                    triggerError(targets);
                 }
             }
         }
 
-        function snapPiece(targets, idPrefix, stepNum) {
+        function triggerError(targets) {
+            texts.forEach(t => {
+                t.setAttribute('value', 'ERRO: POSICAO INCORRETA!');
+                t.setAttribute('color', '#FF4B4B');
+            });
+            
+            // Animacion de retorno ao inicio
+            partPos = { ...initialPos };
+            targets.forEach(t => t.setAttribute('position', `${initialPos.x} ${initialPos.y} ${initialPos.z}`));
+            
+            setTimeout(() => {
+                if (!isSnapped) {
+                    const msg = currentStep === 1 ? "PASSO 1: ENCAIXE O EIXO" : "PASSO 2: INSTALE A CARCACA";
+                    texts.forEach(t => {
+                        t.setAttribute('value', msg);
+                        t.setAttribute('color', '#FFF');
+                    });
+                }
+            }, 1500);
+        }
+
+        function snapPiece(targets) {
+            isSnapped = true;
             targets.forEach(t => {
                 t.setAttribute('position', `${basePos.x} ${basePos.y} -2.5`);
-                t.querySelectorAll('*').forEach(child => child.setAttribute('color', '#32CD32'));
+                const subPieceId = currentStep === 1 ? 'c1' : 'c2';
+                document.getElementById(subPieceId + '-left').setAttribute('color', '#32CD32');
+                document.getElementById(subPieceId + '-right').setAttribute('color', '#32CD32');
             });
 
-            if (stepNum === 1) {
-                currentStep = 2;
-                texts.forEach(t => t.setAttribute('value', 'PASSO 2: INSTALE A CARCACA'));
-                document.getElementById('p2-left').setAttribute('visible', 'true');
-                document.getElementById('p2-right').setAttribute('visible', 'true');
-                document.getElementById('b2-left').setAttribute('visible', 'true');
-                document.getElementById('b2-right').setAttribute('visible', 'true');
-                document.getElementById('b1-left').setAttribute('visible', 'false');
-                document.getElementById('b1-right').setAttribute('visible', 'false');
-            } else {
-                texts.forEach(t => t.setAttribute('value', 'MISSAO CONCLUIDA!'));
-            }
+            setTimeout(() => {
+                if (currentStep === 1) {
+                    currentStep = 2;
+                    isSnapped = false;
+                    partPos = { ...initialPos };
+                    texts.forEach(t => t.setAttribute('value', 'PASSO 2: INSTALE A CARCACA'));
+                    toggleVisibility(['p2', 'b2'], true);
+                    toggleVisibility(['b1'], false);
+                } else {
+                    texts.forEach(t => t.setAttribute('value', 'MISSAO CONCLUIDA!'));
+                }
+            }, 800);
+        }
+
+        function resetSimulation() {
+            location.reload(); // Simplificado para garantir limpeza total de estados de erro
+        }
+
+        function toggleVisibility(ids, state) {
+            ids.forEach(id => {
+                document.getElementById(id + '-left').setAttribute('visible', state);
+                document.getElementById(id + '-right').setAttribute('visible', state);
+            });
         }
 
         async function loop() {
