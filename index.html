@@ -3,10 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 1.1.2 - Hand Tracking</title>
+    <title>AeroVision 1.1.2 - Rear Cam Fix</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
     <style>
@@ -14,28 +13,28 @@
         .viewport { width: 50vw; height: 100vh; position: relative; overflow: hidden; border-right: 1px solid #333; }
         video.webcam { position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%; transform: translate(-50%, -50%); object-fit: cover; z-index: 1; }
         a-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; background: transparent; }
-        #btn { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; background: #00AAFF; color: white; border: none; border-radius: 10px; z-index: 9999; font-weight: bold; }
+        #btn { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; background: #00AAFF; color: white; border: none; border-radius: 10px; z-index: 9999; font-weight: bold; cursor: pointer;}
     </style>
 </head>
 <body>
 
-    <button id="btn">INICIAR COM RECONHECIMENTO DE MÃOS</button>
+    <button id="btn">INICIAR CÂMERA TRASEIRA</button>
 
     <div class="viewport">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-box id="target-left" position="0 0.5 -2" rotation="0 45 0" color="#00AAFF"></a-box>
-            <a-sphere id="finger-left" radius="0.05" color="red" position="0 0 -2"></a-sphere>
-            <a-camera position="0 1.6 0" look-controls="enabled: false"></a-camera>
+            <a-box id="target-left" position="0 0 -2" scale="0.4 0.4 0.4" color="#00AAFF"></a-box>
+            <a-sphere id="finger-left" radius="0.06" color="red" position="0 0 -2"></a-sphere>
+            <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
         </a-scene>
     </div>
 
-    <div class="viewport">
+    <div class="viewport" style="border-right: none;">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-box id="target-right" position="0 0.5 -2" rotation="0 45 0" color="#00AAFF"></a-box>
-            <a-sphere id="finger-right" radius="0.05" color="red" position="0 0 -2"></a-sphere>
-            <a-camera position="0 1.6 0" look-controls="enabled: false"></a-camera>
+            <a-box id="target-right" position="0 0 -2" scale="0.4 0.4 0.4" color="#00AAFF"></a-box>
+            <a-sphere id="finger-right" radius="0.06" color="red" position="0 0 -2"></a-sphere>
+            <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
         </a-scene>
     </div>
 
@@ -45,7 +44,6 @@
         const cubes = [document.getElementById('target-left'), document.getElementById('target-right')];
         const fingers = [document.getElementById('finger-left'), document.getElementById('finger-right')];
 
-        // Configuração do MediaPipe Hands
         const hands = new Hands({
             locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
         });
@@ -53,28 +51,26 @@
         hands.setOptions({
             maxNumHands: 1,
             modelComplexity: 1,
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
+            minDetectionConfidence: 0.7,
+            minTrackingConfidence: 0.7
         });
 
         hands.onResults((results) => {
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
                 const hand = results.multiHandLandmarks[0];
-                // Pegamos o ponto 8 (ponta do dedo indicador)
                 const indexFinger = hand[8];
                 
-                // Mapeamos o X e Y da câmera para o mundo 3D
-                // (Invertemos o X porque a câmera é espelhada)
-                const posX = (0.5 - indexFinger.x) * 4; 
-                const posY = (0.5 - indexFinger.y) * 4 + 1;
+                // Mapeamento para Câmera Traseira (Invertendo a lógica da frontal)
+                const posX = (indexFinger.x - 0.5) * 4; 
+                const posY = (0.5 - indexFinger.y) * 3;
 
                 fingers.forEach(f => {
-                    f.setAttribute('position', `${posX} ${posY} -2`);
+                    f.setAttribute('position', `${posX} ${posY} -1.8`);
                 });
 
-                // Lógica de "Colisão" simples
-                const dist = Math.sqrt(Math.pow(posX - 0, 2) + Math.pow(posY - 0.5, 2));
-                if (dist < 0.3) {
+                // Colisão
+                const dist = Math.sqrt(Math.pow(posX - 0, 2) + Math.pow(posY - 0, 2));
+                if (dist < 0.25) {
                     cubes.forEach(c => c.setAttribute('color', 'yellow'));
                 } else {
                     cubes.forEach(c => c.setAttribute('color', '#00AAFF'));
@@ -83,19 +79,37 @@
         });
 
         btn.addEventListener('click', async () => {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-            videos.forEach(v => v.srcObject = stream);
-            btn.style.display = 'none';
+            try {
+                // Forçando a câmera traseira com restrições rígidas
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: { exact: "environment" },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                
+                videos.forEach(v => {
+                    v.srcObject = stream;
+                    v.play();
+                });
+                btn.style.display = 'none';
 
-            // Inicia o processamento da câmera pela IA
-            const camera = new Camera(videos[0], {
-                onFrame: async () => {
-                    await hands.send({image: videos[0]});
-                },
-                width: 640,
-                height: 480
-            });
-            camera.start();
+                const camera = new Camera(videos[0], {
+                    onFrame: async () => {
+                        await hands.send({image: videos[0]});
+                    },
+                    width: 640,
+                    height: 480
+                });
+                camera.start();
+            } catch (err) {
+                // Caso o "exact: environment" falhe (raro no iPhone), tenta o modo normal
+                alert("Tentando modo alternativo de câmera...");
+                const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                videos.forEach(v => v.srcObject = fallbackStream);
+                btn.style.display = 'none';
+            }
         });
     </script>
 </body>
