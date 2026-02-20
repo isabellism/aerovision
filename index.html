@@ -3,10 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 1.1.2 - Rear Cam Fix</title>
+    <title>AeroVision 1.1.2 - Force Rear Cam</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
     <style>
         body { margin: 0; overflow: hidden; background: #000; display: flex; }
@@ -18,13 +17,13 @@
 </head>
 <body>
 
-    <button id="btn">INICIAR CÂMERA TRASEIRA</button>
+    <button id="btn">ATIVAR CÂMERA TRASEIRA</button>
 
     <div class="viewport">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
             <a-box id="target-left" position="0 0 -2" scale="0.4 0.4 0.4" color="#00AAFF"></a-box>
-            <a-sphere id="finger-left" radius="0.06" color="red" position="0 0 -2"></a-sphere>
+            <a-sphere id="finger-left" radius="0.06" color="red" position="10 10 10"></a-sphere>
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
         </a-scene>
     </div>
@@ -33,7 +32,7 @@
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
             <a-box id="target-right" position="0 0 -2" scale="0.4 0.4 0.4" color="#00AAFF"></a-box>
-            <a-sphere id="finger-right" radius="0.06" color="red" position="0 0 -2"></a-sphere>
+            <a-sphere id="finger-right" radius="0.06" color="red" position="10 10 10"></a-sphere>
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
         </a-scene>
     </div>
@@ -51,8 +50,8 @@
         hands.setOptions({
             maxNumHands: 1,
             modelComplexity: 1,
-            minDetectionConfidence: 0.7,
-            minTrackingConfidence: 0.7
+            minDetectionConfidence: 0.6,
+            minTrackingConfidence: 0.6
         });
 
         hands.onResults((results) => {
@@ -60,55 +59,57 @@
                 const hand = results.multiHandLandmarks[0];
                 const indexFinger = hand[8];
                 
-                // Mapeamento para Câmera Traseira (Invertendo a lógica da frontal)
-                const posX = (indexFinger.x - 0.5) * 4; 
-                const posY = (0.5 - indexFinger.y) * 3;
+                // Ajuste de coordenadas para câmera traseira
+                const posX = (indexFinger.x - 0.5) * 3.5; 
+                const posY = (0.5 - indexFinger.y) * 2.5;
 
                 fingers.forEach(f => {
                     f.setAttribute('position', `${posX} ${posY} -1.8`);
                 });
 
-                // Colisão
                 const dist = Math.sqrt(Math.pow(posX - 0, 2) + Math.pow(posY - 0, 2));
                 if (dist < 0.25) {
                     cubes.forEach(c => c.setAttribute('color', 'yellow'));
                 } else {
                     cubes.forEach(c => c.setAttribute('color', '#00AAFF'));
                 }
+            } else {
+                // Esconde a esfera se não vir a mão
+                fingers.forEach(f => f.setAttribute('position', '10 10 10'));
             }
         });
 
+        async function onFrame() {
+            if (!videos[0].paused && !videos[0].ended) {
+                await hands.send({image: videos[0]});
+            }
+            requestAnimationFrame(onFrame);
+        }
+
         btn.addEventListener('click', async () => {
             try {
-                // Forçando a câmera traseira com restrições rígidas
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: { exact: "environment" },
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    } 
-                });
-                
+                // Configuração definitiva para iOS Safari
+                const constraints = {
+                    video: {
+                        facingMode: "environment",
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    }
+                };
+
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 videos.forEach(v => {
                     v.srcObject = stream;
-                    v.play();
+                    v.onloadedmetadata = () => {
+                        v.play();
+                    };
                 });
+                
                 btn.style.display = 'none';
+                onFrame(); // Inicia o loop de processamento da mão
 
-                const camera = new Camera(videos[0], {
-                    onFrame: async () => {
-                        await hands.send({image: videos[0]});
-                    },
-                    width: 640,
-                    height: 480
-                });
-                camera.start();
             } catch (err) {
-                // Caso o "exact: environment" falhe (raro no iPhone), tenta o modo normal
-                alert("Tentando modo alternativo de câmera...");
-                const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                videos.forEach(v => v.srcObject = fallbackStream);
-                btn.style.display = 'none';
+                alert("Erro ao acessar câmera traseira: " + err);
             }
         });
     </script>
