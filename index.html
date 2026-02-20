@@ -3,60 +3,71 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 1.2 - Passthrough Fix</title>
+    <title>AeroVision 1.3 - Passthrough</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 </head>
-<body style="margin: 0; overflow: hidden;">
+<body style="margin: 0; background-color: #000; overflow: hidden;">
 
-    <div id="startBtn" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); padding:20px; background:#00AAFF; color:white; z-index:9999; border-radius:50px; font-family:sans-serif; font-weight:bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-        DECOLAR (MODO ÓCULOS)
+    <div id="overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; font-family:sans-serif;">
+        <h2 style="margin-bottom:20px;">AeroVision 1.3</h2>
+        <button id="startBtn" style="padding:15px 30px; font-size:18px; background:#00AAFF; color:white; border:none; border-radius:10px; font-weight:bold;">INICIAR REALIDADE MISTA</button>
+        <p style="margin-top:15px; font-size:12px; color:#aaa;">Deite o celular após clicar</p>
     </div>
 
-    <a-scene vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: true">
+    <a-scene vr-mode-ui="enabled: true">
         <a-assets>
-            <video id="webcam" autoplay playsinline crossorigin="anonymous"></video>
+            <video id="webcam" autoplay playsinline muted loop></video>
         </a-assets>
 
-        <a-entity id="rig" position="0 0 0">
-            <a-camera id="camera" look-controls wasd-controls="enabled: false">
-                <a-box id="cube" position="0 0 -2" scale="0.5 0.5 0.5" color="#00AAFF"></a-box>
-                
-                <a-plane id="backgroundPlane" position="0 0 -5" width="20" height="20" material="src: #webcam; shader: flat;"></a-plane>
-            </a-camera>
-        </a-entity>
+        <a-box position="0 1.5 -3" material="color: #00AAFF; roughness: 0.5;"></a-box>
+
+        <a-sky src="#webcam" rotation="0 -90 0"></a-sky>
+
+        <a-entity camera look-controls position="0 1.6 0"></a-entity>
     </a-scene>
 
     <script>
-        const video = document.getElementById('webcam');
         const btn = document.getElementById('startBtn');
+        const overlay = document.getElementById('overlay');
+        const video = document.getElementById('webcam');
         const scene = document.querySelector('a-scene');
 
-        // Configuração da Câmera do iPhone
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-            .then(function (stream) {
-                video.srcObject = stream;
-                video.play();
-            });
-        }
-
         btn.addEventListener('click', function() {
-            // Pede permissão para os sensores do iPhone
-            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission().then(res => {
-                    if (res === 'granted') {
-                        scene.enterVR(); // Divide a tela
-                        btn.style.display = 'none';
+            // 1. Inicia a Câmera
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment', width: 1280, height: 720 } 
+                }).then(function(stream) {
+                    video.srcObject = stream;
+                    video.play();
+                    
+                    // 2. Pede permissão de Sensores (iOS)
+                    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                        DeviceOrientationEvent.requestPermission().then(response => {
+                            if (response == 'granted') {
+                                iniciarSessao();
+                            }
+                        });
+                    } else {
+                        iniciarSessao();
                     }
+                }).catch(function(err) {
+                    alert("Erro ao acessar câmera: " + err);
                 });
-            } else {
-                scene.enterVR();
-                btn.style.display = 'none';
             }
         });
 
-        // Ajuste automático do cubo quando o marcador não é necessário
-        // (Como estamos usando 'Passthrough', o cubo fica fixo na sua visão)
+        function iniciarSessao() {
+            overlay.style.display = 'none';
+            // O modo VR deve ser ativado pelo ícone de óculos que aparecerá
+            // ou podemos tentar forçar:
+            // scene.enterVR(); 
+        }
+
+        // Correção para o Safari não pausar o vídeo em VR
+        scene.addEventListener('enter-vr', () => {
+            video.play();
+        });
     </script>
 </body>
 </html>
