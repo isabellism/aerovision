@@ -3,25 +3,47 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 1.1.1 - Fix</title>
+    <title>AeroVision 1.1.1 - Force VR</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 </head>
 
 <body style="margin: 0; overflow: hidden;">
+    <div id="vrButton" style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 200px; height: 50px; background: #00AAFF; color: white; text-align: center; line-height: 50px; border-radius: 25px; z-index: 9999; font-family: Arial, sans-serif; font-weight: bold; cursor: pointer;">
+        ATIVAR MODO ÓCULOS
+    </div>
+
     <a-scene 
         embedded 
         arjs="sourceType: webcam; debugUIEnabled: false;"
-        vr-mode-ui="enabled: true; enterVRButton: #myEnterVRButton"
-        device-orientation-permission-ui="enabled: true">
-        
-        <a-box position="0 0.5 0" material="color: #00AAFF;"></a-box>
-
+        vr-mode-ui="enabled: false"> <a-box position="0 0.5 0" material="color: #00AAFF;"></a-box>
         <a-marker-camera preset="hiro"></a-marker-camera>
-
-        <div id="myEnterVRButton" style="position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; background: rgba(0,0,0,0.5); border-radius: 10px; display: flex; justify-content: center; align-items: center; z-index: 999; cursor: pointer;">
-            <img src="https://aframe.io/docs/1.5.0/images/vr_icon.svg" width="30">
-        </div>
     </a-scene>
+
+    <script>
+        const btn = document.getElementById('vrButton');
+        const scene = document.querySelector('a-scene');
+
+        btn.addEventListener('click', function() {
+            // 1. Solicita permissão para os sensores (Obrigatório no iOS)
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            // 2. Se aceito, entra no modo VR
+                            scene.enterVR();
+                            btn.style.display = 'none'; // Esconde o botão após entrar
+                        } else {
+                            alert("Permissão para sensores negada. Verifique os Ajustes do Safari.");
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                // Para navegadores que não precisam de permissão explícita
+                scene.enterVR();
+                btn.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
