@@ -5,36 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>AeroVision 1.2 - Passthrough Fix</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 </head>
-
 <body style="margin: 0; overflow: hidden;">
-    <div id="btn" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); padding:15px; background:#00AAFF; color:white; z-index:9999; border-radius:10px; font-family:sans-serif;">
-        CONFIGURAR ÓCULOS
+
+    <div id="startBtn" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); padding:20px; background:#00AAFF; color:white; z-index:9999; border-radius:50px; font-family:sans-serif; font-weight:bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+        DECOLAR (MODO ÓCULOS)
     </div>
 
-    <a-scene 
-        embedded 
-        arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
-        vr-mode-ui="enabled: false">
-        
-        <a-box position="0 0.5 -1.5" material="color: #00AAFF; opacity: 0.8;"></a-box>
+    <a-scene vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: true">
+        <a-assets>
+            <video id="webcam" autoplay playsinline crossorigin="anonymous"></video>
+        </a-assets>
 
-        <a-marker-camera preset="hiro"></a-marker-camera>
-
-        <a-entity camera></a-entity>
+        <a-entity id="rig" position="0 0 0">
+            <a-camera id="camera" look-controls wasd-controls="enabled: false">
+                <a-box id="cube" position="0 0 -2" scale="0.5 0.5 0.5" color="#00AAFF"></a-box>
+                
+                <a-plane id="backgroundPlane" position="0 0 -5" width="20" height="20" material="src: #webcam; shader: flat;"></a-plane>
+            </a-camera>
+        </a-entity>
     </a-scene>
 
     <script>
-        const btn = document.getElementById('btn');
+        const video = document.getElementById('webcam');
+        const btn = document.getElementById('startBtn');
         const scene = document.querySelector('a-scene');
 
+        // Configuração da Câmera do iPhone
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            .then(function (stream) {
+                video.srcObject = stream;
+                video.play();
+            });
+        }
+
         btn.addEventListener('click', function() {
+            // Pede permissão para os sensores do iPhone
             if (typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission().then(res => {
                     if (res === 'granted') {
-                        // O segredo: Entrar em VR e forçar a câmera a continuar rodando
-                        scene.enterVR();
+                        scene.enterVR(); // Divide a tela
                         btn.style.display = 'none';
                     }
                 });
@@ -44,10 +55,8 @@
             }
         });
 
-        // Tenta forçar a transparência do fundo no modo VR
-        scene.addEventListener('enter-vr', function () {
-            document.querySelector('.a-canvas').style.background = 'transparent';
-        });
+        // Ajuste automático do cubo quando o marcador não é necessário
+        // (Como estamos usando 'Passthrough', o cubo fica fixo na sua visão)
     </script>
 </body>
 </html>
