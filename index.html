@@ -3,113 +3,214 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 3.0 - Spatial AR</title>
+    <title>AeroVision 2.4 - Spatial AR</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
     <style>
-        body { margin: 0; overflow: hidden; background: #000; }
-        #start-btn { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 25px; background: #00AAFF; color: white; border: none; border-radius: 15px; z-index: 10000; font-weight: bold; }
-        /* Ajuste para visão estereoscópica (Cardboard) no AR.js */
-        .a-canvas { width: 100% !important; height: 100% !important; left: 0 !important; }
+        body { margin: 0; overflow: hidden; background: #000; display: flex; }
+        .viewport { width: 50vw; height: 100vh; position: relative; overflow: hidden; border-right: 1px solid #222; }
+        video#webcam { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            object-fit: cover; z-index: 0; pointer-events: none;
+        }
+        a-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
+        #start-btn { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            padding: 25px 50px; background: #00AAFF; color: white; border: none; 
+            border-radius: 15px; z-index: 10001; font-weight: bold; font-size: 1.2rem; 
+        }
+        .ui-panel { pointer-events: none; }
     </style>
 </head>
 <body>
 
-    <button id="start-btn">INICIAR RASTREIO ESPACIAL</button>
+    <button id="start-btn">INICIAR SISTEMA ORBITA</button>
+    <video id="webcam" autoplay playsinline muted></video>
 
-    <a-scene embedded vr-mode-ui="enabled: false" arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
-        
-        <a-marker preset="hiro">
-            
-            <a-entity position="0 1.5 0" rotation="-90 0 0">
-                <a-text id="txt-status" value="APONTE PARA O MARCADOR" align="center" width="3" color="#FFF"></a-text>
+    <div class="viewport">
+        <a-scene embedded vr-mode-ui="enabled: false">
+            <a-entity id="world-l">
+                <a-entity camera>
+                    <a-sphere id="res-l" position="-1.2 1 -2.5" radius="0.08" color="red">
+                        <a-text value="RESET" align="center" position="0 -0.15 0" width="1.5"></a-text>
+                    </a-sphere>
+                    <a-text id="txt-l" value="ESCOLHA O MODO" position="0 0.8 -2.5" align="center" width="2.5"></a-text>
+                    <a-sphere id="f-l" radius="0.05" color="red" position="10 10 -2"></a-sphere>
+                    
+                    <a-entity id="menu-l">
+                        <a-entity position="-0.5 0.3 -2">
+                            <a-box class="btn-l" color="#00AAFF" scale="0.4 0.2 0.05"></a-box>
+                            <a-text value="APRENDIZADO" align="center" width="2"></a-text>
+                        </a-entity>
+                        <a-entity position="0.5 0.3 -2">
+                            <a-box class="btn-s" color="#FFD700" scale="0.4 0.2 0.05"></a-box>
+                            <a-text value="SIMULADO" align="center" width="2" color="black"></a-text>
+                        </a-entity>
+                    </a-entity>
+                </a-entity>
+
+                <a-entity id="stage-l" position="0 -0.5 -3">
+                    <a-entity id="p1-l" position="-0.8 0 0" rotation="0 0 90" visible="false"><a-cylinder id="c1-l" color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
+                    <a-entity id="b1-l" position="0.8 0 0" rotation="0 0 90" visible="false"><a-cylinder color="#FFF" height="0.6" radius="0.07" opacity="0.2"></a-cylinder></a-entity>
+                    <a-entity id="p2-l" position="-0.8 -0.4 0" visible="false"><a-torus id="c2-l" color="#0066FF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
+                    <a-entity id="b2-l" position="0.8 0 0" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
+                </a-entity>
             </a-entity>
+            <a-light type="ambient" intensity="1.2"></a-light>
+        </a-scene>
+    </div>
 
-            <a-entity id="menu-area" position="0 0.5 0" rotation="-90 0 0">
-                <a-box id="btn-learn" position="-0.4 0 0" scale="0.3 0.2 0.1" color="#00AAFF">
-                    <a-text value="ENSINO" align="center" position="0 0 0.6" width="2"></a-text>
-                </a-box>
-                <a-box id="btn-sim" position="0.4 0 0" scale="0.3 0.2 0.1" color="#FFD700">
-                    <a-text value="SIMULADO" align="center" position="0 0 0.6" width="2" color="black"></a-text>
-                </a-box>
+    <div class="viewport" style="border-right: none;">
+        <a-scene embedded vr-mode-ui="enabled: false">
+            <a-entity id="world-r">
+                <a-entity camera>
+                    <a-sphere id="res-r" position="-1.2 1 -2.5" radius="0.08" color="red"></a-sphere>
+                    <a-text id="txt-r" value="ESCOLHA O MODO" position="0 0.8 -2.5" align="center" width="2.5"></a-text>
+                    <a-sphere id="f-r" radius="0.05" color="red" position="10 10 -2"></a-sphere>
+                    <a-entity id="menu-r">
+                        <a-entity position="-0.5 0.3 -2">
+                            <a-box color="#00AAFF" scale="0.4 0.2 0.05"></a-box>
+                            <a-text value="APRENDIZADO" align="center" width="2"></a-text>
+                        </a-entity>
+                        <a-entity position="0.5 0.3 -2">
+                            <a-box color="#FFD700" scale="0.4 0.2 0.05"></a-box>
+                            <a-text value="SIMULADO" align="center" width="2" color="black"></a-text>
+                        </a-entity>
+                    </a-entity>
+                </a-entity>
+
+                <a-entity id="stage-r" position="0 -0.5 -3">
+                    <a-entity id="p1-r" position="-0.8 0 0" rotation="0 0 90" visible="false"><a-cylinder id="c1-r" color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
+                    <a-entity id="b1-r" position="0.8 0 0" rotation="0 0 90" visible="false"><a-cylinder color="#FFF" height="0.6" radius="0.07" opacity="0.2"></a-cylinder></a-entity>
+                    <a-entity id="p2-r" position="-0.7 -0.4 0" visible="false"><a-torus id="c2-r" color="#0066FF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
+                    <a-entity id="b2-r" position="0.8 0 0" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
+                </a-entity>
             </a-entity>
-
-            <a-entity id="p1" position="-0.5 0.1 0" rotation="0 0 0" visible="false">
-                <a-cylinder color="#777" height="0.4" radius="0.04"></a-cylinder>
-            </a-entity>
-            <a-entity id="b1" position="0.3 0.1 0" rotation="0 0 0" visible="false">
-                <a-cylinder color="#FFF" height="0.4" radius="0.05" opacity="0.3"></a-cylinder>
-            </a-entity>
-
-            <a-entity id="p2" position="-0.5 0.1 0.4" visible="false">
-                <a-torus color="#0066FF" radius="0.15" radius-tubular="0.01" rotation="90 0 0"></a-torus>
-            </a-entity>
-        </a-marker>
-
-        <a-entity camera>
-            <a-sphere id="hand-pointer" radius="0.03" color="red" position="0 0 -1"></a-sphere>
-        </a-entity>
-
-    </a-scene>
+            <a-light type="ambient" intensity="1.2"></a-light>
+        </a-scene>
+    </div>
 
     <script>
+        const video = document.getElementById('webcam');
         const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.7 });
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 
-        let state = "MENU";
-        let isGrabbing = false;
-        let activePiece = null;
-        let p1Pos = {x: -0.5, y: 0.1, z: 0};
-        
+        let appState = "MENU"; let gameMode = ""; let step = 1;
+        let grabbing = false; let activeId = null;
+        let p1Pos = {x:-0.7, y:0}; let p2Pos = {x:-0.7, y:-0.4};
+        const targetPos = {x:0.7, y:0}; // Coordenadas dentro do 'stage'
+
         hands.onResults((res) => {
-            if (!res.multiHandLandmarks || res.multiHandLandmarks.length === 0) return;
-
-            const h = res.multiHandLandmarks[0];
-            // Mapeamento da mão para coordenadas 3D (ajustado para AR)
-            const x = (h[8].x - 0.5) * 2;
-            const y = (0.5 - h[8].y) * 2;
-            const pinch = Math.sqrt(Math.pow(h[4].x - h[8].x, 2) + Math.pow(h[4].y - h[8].y, 2));
-
-            document.getElementById('hand-pointer').setAttribute('position', `${x} ${y} -1`);
-
-            if (state === "MENU" && pinch < 0.1) {
-                if (x < 0) startMode("learn");
-                else if (x > 0) startMode("sim");
+            if (!res.multiHandLandmarks || res.multiHandLandmarks.length === 0) {
+                document.querySelectorAll('[id^="f-"]').forEach(f => f.setAttribute('position', '10 10 -2'));
+                return;
             }
 
-            if (state === "PLAY" && pinch < 0.08) {
-                // Lógica de arrastar peça (simplificada para o marcador)
-                // Aqui a lógica detecta se sua mão está "perto" da peça no marcador
+            const h = res.multiHandLandmarks[0];
+            const x = (h[8].x - 0.5) * 4; 
+            const y = (0.5 - h[8].y) * 3;
+            const pinch = Math.sqrt(Math.pow(h[4].x - h[8].x, 2) + Math.pow(h[4].y - h[8].y, 2));
+            
+            document.querySelectorAll('[id^="f-"]').forEach(f => f.setAttribute('position', `${x} ${y} -2.1`));
+
+            // RESET HANDS-FREE (Superior Esquerdo)
+            if (x < -0.8 && y > 0.8 && pinch < 0.1) {
+                softReset();
+                return;
+            }
+
+            // SELEÇÃO DE MENU
+            if (appState === "MENU" && pinch < 0.08) {
+                if (x < 0 && Math.abs(y - 0.3) < 0.3) initGame("learn");
+                if (x > 0 && Math.abs(y - 0.3) < 0.3) initGame("sim");
+                return;
+            }
+
+            // JOGABILIDADE
+            if (appState === "PLAY") {
+                let id = step === 1 ? 'p1' : 'p2';
+                let pos = step === 1 ? p1Pos : p2Pos;
+                
+                // No modo Simulado, as peças estão no 'stage', precisamos compensar a posição da câmera
+                // Para simplificar, mantemos a interação no espaço da câmera
+                const dist = Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2));
+
+                if (pinch < 0.08 && dist < 0.6) {
+                    isGrabbing = true;
+                    pos.x = x; pos.y = y;
+                    updateVisuals(id, x, y);
+                } else if (isGrabbing) {
+                    isGrabbing = false;
+                    const distToTarget = Math.sqrt(Math.pow(pos.x - targetPos.x, 2) + Math.pow(pos.y - targetPos.y, 2));
+                    if (distToTarget < 0.4) snap(id);
+                    else if (gameMode === "sim") fail(id);
+                }
             }
         });
 
-        function startMode(m) {
-            state = "PLAY";
-            document.getElementById('menu-area').setAttribute('visible', 'false');
-            document.getElementById('txt-status').setAttribute('value', m === "learn" ? "MODO ENSINO" : "MODO SIMULADO");
-            document.getElementById('p1').setAttribute('visible', 'true');
-            document.getElementById('b1').setAttribute('visible', 'true');
+        function initGame(m) {
+            appState = "PLAY"; gameMode = m; step = 1;
+            document.querySelectorAll('[id^="menu-"]').forEach(el => el.setAttribute('visible', 'false'));
+            updateTxt(m === "learn" ? "MODO APRENDIZADO" : "MODO SIMULADO", "#FFF");
+            show(['p1', 'b1'], true);
+            if(m === 'sim') show(['p2'], true);
         }
 
-        function resetSimulation() {
-            // Reset suave como pedido
-            state = "MENU";
-            document.getElementById('menu-area').setAttribute('visible', 'true');
-            document.getElementById('p1').setAttribute('visible', 'false');
-            document.getElementById('p2').setAttribute('visible', 'false');
-        }
-
-        document.getElementById('start-btn').addEventListener('click', () => {
-            document.getElementById('start-btn').style.display = 'none';
-            // O AR.js já gerencia a webcam, apenas conectamos a IA ao vídeo que ele cria
-            const video = document.querySelector('video');
-            function run() { 
-                if (video && video.readyState >= 2) hands.send({image: video}); 
-                requestAnimationFrame(run); 
+        function snap(id) {
+            updateVisuals(id, targetPos.x, targetPos.y);
+            document.querySelectorAll(`[id^="${id}-"] *`).forEach(el => el.setAttribute('color', '#32CD32'));
+            if (step === 1) {
+                step = 2;
+                updateTxt("PASSO 2: CARCACA", "#FFF");
+                show(['p2', 'b2'], true);
+                show(['b1'], false);
+            } else {
+                updateTxt("MISSAO CONCLUIDA!", "#32CD32");
             }
-            run();
+        }
+
+        function fail(id) {
+            updateTxt("ERRO: POSICAO INCORRETA", "#FF4B4B");
+            const rx = -0.7; const ry = (id === 'p1' ? 0 : -0.4);
+            if(id === 'p1') { p1Pos.x = rx; p1Pos.y = ry; } else { p2Pos.x = rx; p2Pos.y = ry; }
+            setTimeout(() => {
+                updateVisuals(id, rx, ry);
+                updateTxt(step === 1 ? "PASSO 1: EIXO" : "PASSO 2: CARCACA", "#FFF");
+            }, 1000);
+        }
+
+        function softReset() {
+            currentStep = 1; appState = "MENU"; isGrabbing = false;
+            p1Pos = {x:-0.7, y:0}; p2Pos = {x:-0.7, y:-0.4};
+            document.querySelectorAll('[id^="menu-"]').forEach(el => el.setAttribute('visible', 'true'));
+            show(['p1','p2','b1','b2'], false);
+            updateTxt("ESCOLHA O MODO", "#FFF");
+            document.querySelectorAll('[id^="c1-"]').forEach(e => e.setAttribute('color', '#777'));
+            document.querySelectorAll('[id^="c2-"]').forEach(e => e.setAttribute('color', '#0066FF'));
+        }
+
+        function updateVisuals(id, x, y) {
+            document.querySelectorAll(`[id^="${id}-"]`).forEach(el => el.setAttribute('position', `${x} ${y} -2.5`));
+        }
+
+        function updateTxt(m, c) {
+            document.querySelectorAll('[id^="txt-"]').forEach(t => { t.setAttribute('value', m); t.setAttribute('color', c); });
+        }
+
+        function show(ids, s) {
+            ids.forEach(id => {
+                document.querySelectorAll(`[id^="${id}-"]`).forEach(el => el.setAttribute('visible', s));
+            });
+        }
+
+        document.getElementById('start-btn').addEventListener('click', async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            video.srcObject = stream;
+            video.play();
+            document.getElementById('start-btn').style.display = 'none';
+            function run() { if (video.readyState >= 2) hands.send({image: video}); requestAnimationFrame(run); }
+            setTimeout(run, 1000);
         });
     </script>
 </body>
