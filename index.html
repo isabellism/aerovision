@@ -3,84 +3,99 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 1.1.1 - Prático 3D</title>
+    <title>AeroVision 1.1.2 - Hand Tracking</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
     <style>
         body { margin: 0; overflow: hidden; background: #000; display: flex; }
-        /* Configuração dos dois "olhos" */
-        .viewport {
-            width: 50vw; height: 100vh;
-            position: relative; overflow: hidden;
-            border-right: 1px solid #333;
-        }
-        /* O vídeo da câmera no fundo */
-        video.webcam {
-            position: absolute; top: 50%; left: 50%;
-            min-width: 100%; min-height: 100%;
-            width: auto; height: auto;
-            transform: translate(-50%, -50%);
-            object-fit: cover; z-index: 1;
-        }
-        /* A cena 3D transparente por cima do vídeo */
-        a-scene {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 2; background: transparent;
-        }
-        /* Botão de iniciar */
-        #btn {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            padding: 20px 40px; background: #00AAFF; color: white; border: none;
-            border-radius: 10px; z-index: 9999; font-weight: bold; font-size: 18px; cursor: pointer;
-        }
+        .viewport { width: 50vw; height: 100vh; position: relative; overflow: hidden; border-right: 1px solid #333; }
+        video.webcam { position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%; transform: translate(-50%, -50%); object-fit: cover; z-index: 1; }
+        a-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; background: transparent; }
+        #btn { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; background: #00AAFF; color: white; border: none; border-radius: 10px; z-index: 9999; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <button id="btn">INICIAR SISTEMA</button>
+    <button id="btn">INICIAR COM RECONHECIMENTO DE MÃOS</button>
 
     <div class="viewport">
         <video class="webcam" autoplay playsinline muted></video>
-        
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-box position="0 0.5 -2" rotation="0 45 0" color="#00AAFF" shadow></a-box>
-            <a-light type="directional" position="1 2 1"></a-light>
-            <a-light type="ambient" color="#555"></a-light>
-            
-            <a-entity camera look-controls="enabled: false" position="-0.03 1.6 0"></a-entity>
+            <a-box id="target-left" position="0 0.5 -2" rotation="0 45 0" color="#00AAFF"></a-box>
+            <a-sphere id="finger-left" radius="0.05" color="red" position="0 0 -2"></a-sphere>
+            <a-camera position="0 1.6 0" look-controls="enabled: false"></a-camera>
         </a-scene>
     </div>
 
-    <div class="viewport" style="border-right: none;">
+    <div class="viewport">
         <video class="webcam" autoplay playsinline muted></video>
-        
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-box position="0 0.5 -2" rotation="0 45 0" color="#00AAFF" shadow></a-box>
-            <a-light type="directional" position="1 2 1"></a-light>
-            <a-light type="ambient" color="#555"></a-light>
-
-            <a-entity camera look-controls="enabled: false" position="0.03 1.6 0"></a-entity>
+            <a-box id="target-right" position="0 0.5 -2" rotation="0 45 0" color="#00AAFF"></a-box>
+            <a-sphere id="finger-right" radius="0.05" color="red" position="0 0 -2"></a-sphere>
+            <a-camera position="0 1.6 0" look-controls="enabled: false"></a-camera>
         </a-scene>
     </div>
 
     <script>
         const btn = document.getElementById('btn');
         const videos = document.querySelectorAll('.webcam');
+        const cubes = [document.getElementById('target-left'), document.getElementById('target-right')];
+        const fingers = [document.getElementById('finger-left'), document.getElementById('finger-right')];
 
-        btn.addEventListener('click', function() {
-            // Inicia a câmera e joga o vídeo para os dois elementos <video>
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment' } 
-                }).then(function(stream) {
-                    videos.forEach(v => {
-                        v.srcObject = stream;
-                        v.play();
-                    });
-                    btn.style.display = 'none';
-                }).catch(err => {
-                    alert("Erro: Permissão de câmera negada pelo Safari.");
+        // Configuração do MediaPipe Hands
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+
+        hands.onResults((results) => {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const hand = results.multiHandLandmarks[0];
+                // Pegamos o ponto 8 (ponta do dedo indicador)
+                const indexFinger = hand[8];
+                
+                // Mapeamos o X e Y da câmera para o mundo 3D
+                // (Invertemos o X porque a câmera é espelhada)
+                const posX = (0.5 - indexFinger.x) * 4; 
+                const posY = (0.5 - indexFinger.y) * 4 + 1;
+
+                fingers.forEach(f => {
+                    f.setAttribute('position', `${posX} ${posY} -2`);
                 });
+
+                // Lógica de "Colisão" simples
+                const dist = Math.sqrt(Math.pow(posX - 0, 2) + Math.pow(posY - 0.5, 2));
+                if (dist < 0.3) {
+                    cubes.forEach(c => c.setAttribute('color', 'yellow'));
+                } else {
+                    cubes.forEach(c => c.setAttribute('color', '#00AAFF'));
+                }
             }
+        });
+
+        btn.addEventListener('click', async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            videos.forEach(v => v.srcObject = stream);
+            btn.style.display = 'none';
+
+            // Inicia o processamento da câmera pela IA
+            const camera = new Camera(videos[0], {
+                onFrame: async () => {
+                    await hands.send({image: videos[0]});
+                },
+                width: 640,
+                height: 480
+            });
+            camera.start();
         });
     </script>
 </body>
