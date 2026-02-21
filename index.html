@@ -2,22 +2,33 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ORBITA - Calibragem 3D</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ORBITA - Sincronia 3D</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
     <style>
-        body { margin: 0; overflow: hidden; background: #000; display: flex; }
-        .viewport { width: 50vw; height: 100vh; position: relative; overflow: hidden; border-right: 1px solid #444; }
-        video.webcam { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 0; overflow: hidden; background: #000; display: flex; width: 100vw; height: 100vh; }
+        .viewport { 
+            width: 50vw; height: 100vh; position: relative; 
+            overflow: hidden; border-right: 1px solid #333; 
+        }
+        video.webcam { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            object-fit: cover; z-index: 1; pointer-events: none;
+        }
         a-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
-        #start-btn { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 25px; background: #00AAFF; color: white; border: none; border-radius: 10px; z-index: 10000; font-weight: bold; }
+        #start-btn { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            padding: 20px 40px; background: #00AAFF; color: white; border: none; 
+            border-radius: 10px; z-index: 10000; font-weight: bold; font-size: 1.1rem;
+        }
     </style>
 </head>
 <body>
 
-    <button id="start-btn">CALIBRAR CARCAÇA 3D</button>
+    <button id="start-btn">INICIAR CALIBRAGEM</button>
 
     <div class="viewport">
         <video class="webcam" autoplay playsinline muted></video>
@@ -26,57 +37,52 @@
                 <a-asset-item id="carcaca-glb" src="assets/carcaca.glb"></a-asset-item>
             </a-assets>
 
-            <a-entity camera look-controls="enabled: true">
-                <a-sphere id="res-l" position="-0.8 0.6 -2" radius="0.05" color="red"></a-sphere>
-                <a-text id="txt-l" value="AGUARDANDO..." position="0 0.5 -2" align="center" width="2"></a-text>
-                <a-sphere class="dot-l" radius="0.03" color="white" position="0 0 -1.5"></a-sphere>
+            <a-entity camera position="-0.03 0 0" look-controls="enabled: false">
+                <a-sphere id="res-l" position="-0.8 0.7 -2" radius="0.06" color="red"></a-sphere>
+                <a-text id="txt-l" value="SISTEMA PRONTO" position="0 0.6 -2" align="center" width="2"></a-text>
+                <a-sphere class="dot-l" radius="0.03" color="white" position="0 0 -1"></a-sphere>
 
                 <a-entity id="menu-l">
-                    <a-box id="btn-l" position="-0.4 0 -1.5" scale="0.3 0.15 0.01" color="#00AAFF"></a-box>
-                    <a-text value="APRENDIZADO" position="-0.4 0 -1.49" align="center" width="1.5"></a-text>
-                    <a-box id="btn-s" position="0.4 0 -1.5" scale="0.3 0.15 0.01" color="#FFD700"></a-box>
-                    <a-text value="SIMULADO" position="0.4 0 -1.49" align="center" width="1.5" color="black"></a-text>
+                    <a-box id="btn-learn-l" position="-0.4 0.1 -1.5" scale="0.3 0.15 0.01" color="#00AAFF"></a-box>
+                    <a-text value="ENSINO" position="-0.4 0.1 -1.49" align="center" width="1.5"></a-text>
+                    <a-box id="btn-sim-l" position="0.4 0.1 -1.5" scale="0.3 0.15 0.01" color="#FFD700"></a-box>
+                    <a-text value="SIMULADO" position="0.4 0.1 -1.49" align="center" width="1.5" color="black"></a-text>
                 </a-entity>
             </a-entity>
 
-            <a-entity id="world-l" position="0 -0.5 -3">
-                <a-box id="fallback-l" position="-0.8 0.5 0" scale="0.2 0.2 0.2" color="blue" opacity="0.5"></a-box>
-                
-                <a-entity id="real-piece-l" gltf-model="#carcaca-glb" position="-0.8 0.5 0" scale="1 1 1" visible="false"></a-entity>
-                
-                <a-entity id="target-l" gltf-model="#carcaca-glb" position="0.8 0.5 0" scale="1 1 1" visible="false" opacity="0.3"></a-entity>
-                
-                <a-grid material="opacity: 0.1"></a-grid>
+            <a-entity position="0 -0.5 -3">
+                <a-box id="fall-l" position="-0.6 0.5 0" scale="0.2 0.2 0.2" color="blue" opacity="0.6"></a-box>
+                <a-entity id="real-l" gltf-model="#carcaca-glb" position="-0.6 0.5 0" scale="1 1 1" visible="false"></a-entity>
+                <a-entity id="target-l" gltf-model="#carcaca-glb" position="0.6 0.5 0" scale="1 1 1" visible="false" opacity="0.3"></a-entity>
+                <a-grid material="opacity: 0.1; color: #444"></a-grid>
             </a-entity>
-            <a-light type="directional" position="1 2 1"></a-light>
-            <a-light type="ambient" intensity="0.8"></a-light>
+            <a-light type="ambient" intensity="1"></a-light>
         </a-scene>
     </div>
 
     <div class="viewport" style="border-right: none;">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-entity camera look-controls="enabled: true">
-                <a-sphere id="res-r" position="-0.8 0.6 -2" radius="0.05" color="red"></a-sphere>
-                <a-text id="txt-r" value="AGUARDANDO..." position="0 0.5 -2" align="center" width="2"></a-text>
-                <a-sphere class="dot-r" radius="0.03" color="white" position="0 0 -1.5"></a-sphere>
+            <a-entity camera position="0.03 0 0" look-controls="enabled: false">
+                <a-sphere id="res-r" position="-0.8 0.7 -2" radius="0.06" color="red"></a-sphere>
+                <a-text id="txt-r" value="SISTEMA PRONTO" position="0 0.6 -2" align="center" width="2"></a-text>
+                <a-sphere class="dot-r" radius="0.03" color="white" position="0 0 -1"></a-sphere>
 
                 <a-entity id="menu-r">
-                    <a-box position="-0.4 0 -1.5" scale="0.3 0.15 0.01" color="#00AAFF"></a-box>
-                    <a-text value="APRENDIZADO" position="-0.4 0 -1.49" align="center" width="1.5"></a-text>
-                    <a-box position="0.4 0 -1.5" scale="0.3 0.15 0.01" color="#FFD700"></a-box>
-                    <a-text value="SIMULADO" position="0.4 0 -1.49" align="center" width="1.5" color="black"></a-text>
+                    <a-box position="-0.4 0.1 -1.5" scale="0.3 0.15 0.01" color="#00AAFF"></a-box>
+                    <a-text value="ENSINO" position="-0.4 0.1 -1.49" align="center" width="1.5"></a-text>
+                    <a-box position="0.4 0.1 -1.5" scale="0.3 0.15 0.01" color="#FFD700"></a-box>
+                    <a-text value="SIMULADO" position="0.4 0.1 -1.49" align="center" width="1.5" color="black"></a-text>
                 </a-entity>
             </a-entity>
 
-            <a-entity id="world-r" position="0 -0.5 -3">
-                <a-box id="fallback-r" position="-0.8 0.5 0" scale="0.2 0.2 0.2" color="blue" opacity="0.5"></a-box>
-                <a-entity id="real-piece-r" gltf-model="#carcaca-glb" position="-0.8 0.5 0" scale="1 1 1" visible="false"></a-entity>
-                <a-entity id="target-r" gltf-model="#carcaca-glb" position="0.8 0.5 0" scale="1 1 1" visible="false" opacity="0.3"></a-entity>
-                <a-grid material="opacity: 0.1"></a-grid>
+            <a-entity position="0 -0.5 -3">
+                <a-box id="fall-r" position="-0.6 0.5 0" scale="0.2 0.2 0.2" color="blue" opacity="0.6"></a-box>
+                <a-entity id="real-r" gltf-model="#carcaca-glb" position="-0.6 0.5 0" scale="1 1 1" visible="false"></a-entity>
+                <a-entity id="target-r" gltf-model="#carcaca-glb" position="0.6 0.5 0" scale="1 1 1" visible="false" opacity="0.3"></a-entity>
+                <a-grid material="opacity: 0.1; color: #444"></a-grid>
             </a-entity>
-            <a-light type="directional" position="1 2 1"></a-light>
-            <a-light type="ambient" intensity="0.8"></a-light>
+            <a-light type="ambient" intensity="1"></a-light>
         </a-scene>
     </div>
 
@@ -84,7 +90,7 @@
         const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
         hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 
-        let state = "MENU"; let grabbing = false; let pPos = {x:-0.8, y:0.5};
+        let state = "MENU"; let grabbing = false; let pPos = {x:-0.6, y:0.5};
 
         hands.onResults((res) => {
             if (!res.multiHandLandmarks || res.multiHandLandmarks.length === 0) return;
@@ -92,42 +98,40 @@
             const x = (h[8].x - 0.5) * 3; const y = (0.5 - h[8].y) * 2;
             const pinch = Math.sqrt(Math.pow(h[4].x - h[8].x, 2) + Math.pow(h[4].y - h[8].y, 2));
 
-            document.querySelectorAll('[class^="dot-"]').forEach(d => d.setAttribute('position', `${x} ${y} -1.5`));
+            document.querySelectorAll('[class^="dot-"]').forEach(d => d.setAttribute('position', `${x} ${y} -1`));
+
+            if (x < -0.7 && y > 0.6 && pinch < 0.1) location.reload();
 
             if (state === "MENU" && pinch < 0.1) {
-                if (x < 0) start("learn"); else if (x > 0) start("sim");
+                if (x < 0 && Math.abs(y-0.1) < 0.3) start();
+                if (x > 0 && Math.abs(y-0.1) < 0.3) start();
             }
 
             if (state === "PLAY") {
                 const dist = Math.sqrt(Math.pow(x - pPos.x, 2) + Math.pow(y - pPos.y, 2));
                 if (pinch < 0.08 && dist < 0.6) {
                     grabbing = true; pPos.x = x; pPos.y = y;
-                    updatePos(x, y);
+                    document.querySelectorAll('[id^="real-"], [id^="fall-"]').forEach(el => el.setAttribute('position', `${x} ${y} 0`));
                 } else if (grabbing) {
                     grabbing = false;
-                    if (Math.sqrt(Math.pow(x-0.8,2)+Math.pow(y-0.5,2)) < 0.4) snap();
                 }
             }
         });
 
-        function start(m) {
+        function start() {
             state = "PLAY";
             document.querySelectorAll('[id^="menu-"]').forEach(el => el.setAttribute('visible', 'false'));
-            document.querySelectorAll('[id^="txt-"]').forEach(t => t.setAttribute('value', m.toUpperCase()));
-            // Mostra o modelo real se ele carregou, se não mostra o fallback
-            document.querySelectorAll('[id^="real-piece-"]').forEach(el => el.setAttribute('visible', 'true'));
-            document.querySelectorAll('[id^="target-"]').forEach(el => el.setAttribute('visible', 'true'));
-            document.querySelectorAll('[id^="fallback-"]').forEach(el => el.setAttribute('visible', 'false'));
+            document.querySelectorAll('[id^="txt-"]').forEach(t => t.setAttribute('value', "MODO ATIVO"));
+            // Se o modelo carregar, o A-Frame dispara o evento 'model-loaded'
         }
 
-        function snap() {
-            updatePos(0.8, 0.5);
-            document.querySelectorAll('[id^="txt-"]').forEach(t => t.setAttribute('value', "SUCESSO!"));
-        }
-
-        function updatePos(x, y) {
-            document.querySelectorAll('[id^="real-piece-"]').forEach(el => el.setAttribute('position', `${x} ${y} 0`));
-        }
+        // Tentar detectar se o modelo carregou para esconder o cubo azul automaticamente
+        document.querySelectorAll('[id^="real-"]').forEach(el => {
+            el.addEventListener('model-loaded', () => {
+                el.setAttribute('visible', 'true');
+                document.querySelectorAll('[id^="fall-"]').forEach(f => f.setAttribute('visible', 'false'));
+            });
+        });
 
         document.getElementById('start-btn').addEventListener('click', async () => {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
@@ -136,14 +140,6 @@
             const vid = document.querySelectorAll('.webcam')[0];
             function run() { if (vid.readyState >= 2) hands.send({image: vid}); requestAnimationFrame(run); }
             run();
-        });
-
-        // Verificar se o modelo carregou
-        document.getElementById('carcaca-glb').addEventListener('model-loaded', () => {
-            console.log("Modelo carregado com sucesso!");
-        });
-        document.getElementById('carcaca-glb').addEventListener('model-error', () => {
-            alert("Erro ao carregarassets/carcaca.glb - Verifique o nome do arquivo no GitHub!");
         });
     </script>
 </body>
