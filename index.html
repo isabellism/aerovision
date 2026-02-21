@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AeroVision 3.5 - ORBITA Spatial</title>
+    <title>ORBITA - Teste Carcaça</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
@@ -12,22 +12,26 @@
         .viewport { width: 50vw; height: 100vh; position: relative; overflow: hidden; border-right: 2px solid #222; }
         video.webcam { position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%; transform: translate(-50%, -50%); object-fit: cover; z-index: 1; }
         a-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; background: transparent; }
-        #start-btn { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 30px; background: #00AAFF; color: white; border: none; border-radius: 15px; z-index: 10000; font-weight: bold; font-size: 1.2rem; }
+        #start-btn { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 30px; background: #00AAFF; color: white; border: none; border-radius: 15px; z-index: 10000; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <button id="start-btn">INICIAR AMBIENTE 3D</button>
+    <button id="start-btn">INICIAR TESTE: CARCAÇA</button>
 
     <div class="viewport">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-entity id="cam-l" camera position="-0.035 0 0" look-controls="enabled: true">
-                <a-sphere class="reset-trigger" position="-1.2 1 -2.5" radius="0.08" color="red"><a-text value="RESET" align="center" position="0 -0.2 0" width="1.5"></a-text></a-sphere>
-                <a-text class="status-label" value="ESCOLHA O MODO" position="0 0.8 -2.5" align="center" width="2.5"></a-text>
-                <a-sphere class="hand-cursor" radius="0.04" color="red" position="10 10 -2"></a-sphere>
+            <a-assets>
+                <a-asset-item id="model-carcaca" src="assets/carcaca.glb"></a-asset-item>
+            </a-assets>
+
+            <a-entity camera position="-0.035 0 0" look-controls="enabled: true">
+                <a-sphere id="res-l" position="-1 0.8 -2.5" radius="0.08" color="red"><a-text value="RESET" align="center" position="0 -0.2 0" width="1.5"></a-text></a-sphere>
+                <a-text class="status-l" value="ESCOLHA O MODO" position="0 0.7 -2.5" align="center" width="2.5"></a-text>
+                <a-sphere class="cursor-l" radius="0.04" color="red" position="10 10 -2"></a-sphere>
                 
-                <a-entity class="menu-root">
+                <a-entity class="menu-l">
                     <a-entity position="-0.5 0.2 -2">
                         <a-box color="#00AAFF" scale="0.4 0.2 0.05"></a-box>
                         <a-text value="APRENDIZADO" align="center" position="0 0 0.06" width="2"></a-text>
@@ -39,46 +43,41 @@
                 </a-entity>
             </a-entity>
 
-            <a-entity id="stage-l" position="0 -0.5 -3">
-                <a-entity class="p1-obj" position="-0.8 0.5 0" rotation="0 0 90" visible="false"><a-cylinder color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
-                <a-entity class="b1-obj" position="0.8 0.5 0" rotation="0 0 90" visible="false"><a-cylinder color="#FFF" height="0.6" radius="0.07" opacity="0.2"></a-cylinder></a-entity>
-                <a-entity class="p2-obj" position="-0.8 0.1 0.5" visible="false"><a-torus color="#0066FF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
-                <a-entity class="b2-obj" position="0.8 0.5 0" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
-                <a-grid material="opacity: 0.1; color: #444" position="0 0 0" rotation="0 0 0"></a-grid>
+            <a-entity id="world-l" position="0 -0.5 -4">
+                <a-entity id="p-carcaca-l" gltf-model="#model-carcaca" position="-1 0.5 0" scale="1 1 1" visible="false"></a-entity>
+                <a-entity id="b-carcaca-l" gltf-model="#model-carcaca" position="1 0.5 0" scale="1 1 1" visible="false" material="opacity: 0.2; transparent: true"></a-entity>
+                
+                <a-grid material="opacity: 0.1; color: #444"></a-grid>
             </a-entity>
-            <a-light type="directional" position="1 2 1" intensity="1"></a-light>
-            <a-light type="ambient" intensity="0.8"></a-light>
+            <a-light type="directional" position="1 2 1" intensity="1.2"></a-light>
+            <a-light type="ambient" intensity="0.9"></a-light>
         </a-scene>
     </div>
 
     <div class="viewport" style="border-right: none;">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-entity id="cam-r" camera position="0.035 0 0" look-controls="enabled: true">
-                <a-sphere class="reset-trigger" position="-1.2 1 -2.5" radius="0.08" color="red"></a-sphere>
-                <a-text class="status-label" value="ESCOLHA O MODO" position="0 0.8 -2.5" align="center" width="2.5"></a-text>
-                <a-sphere class="hand-cursor" radius="0.04" color="red" position="10 10 -2"></a-sphere>
-                <a-entity class="menu-root">
-                    <a-entity position="-0.5 0.2 -2">
-                        <a-box color="#00AAFF" scale="0.4 0.2 0.05"></a-box>
-                        <a-text value="APRENDIZADO" align="center" position="0 0 0.06" width="2"></a-text>
-                    </a-entity>
-                    <a-entity position="0.5 0.2 -2">
-                        <a-box color="#FFD700" scale="0.4 0.2 0.05"></a-box>
-                        <a-text value="SIMULADO" align="center" position="0 0 0.06" width="2" color="black"></a-text>
-                    </a-entity>
+            <a-assets>
+                <a-asset-item id="model-carcaca-r" src="assets/carcaca.glb"></a-asset-item>
+            </a-assets>
+
+            <a-entity camera position="0.035 0 0" look-controls="enabled: true">
+                <a-sphere id="res-r" position="-1 0.8 -2.5" radius="0.08" color="red"></a-sphere>
+                <a-text class="status-r" value="ESCOLHA O MODO" position="0 0.7 -2.5" align="center" width="2.5"></a-text>
+                <a-sphere class="cursor-r" radius="0.04" color="red" position="10 10 -2"></a-sphere>
+                <a-entity class="menu-r">
+                    <a-box position="-0.5 0.2 -2" scale="0.4 0.2 0.05" color="#00AAFF"></a-box>
+                    <a-box position="0.5 0.2 -2" scale="0.4 0.2 0.05" color="#FFD700"></a-box>
                 </a-entity>
             </a-entity>
 
-            <a-entity id="stage-r" position="0 -0.5 -3">
-                <a-entity class="p1-obj" position="-0.8 0.5 0" rotation="0 0 90" visible="false"><a-cylinder color="#777" height="0.6" radius="0.05"></a-cylinder></a-entity>
-                <a-entity class="b1-obj" position="0.8 0.5 0" rotation="0 0 90" visible="false"><a-cylinder color="#FFF" height="0.6" radius="0.07" opacity="0.2"></a-cylinder></a-entity>
-                <a-entity class="p2-obj" position="-0.8 0.1 0.5" visible="false"><a-torus color="#0066FF" radius="0.25" radius-tubular="0.02" rotation="90 0 0"></a-torus></a-entity>
-                <a-entity class="b2-obj" position="0.8 0.5 0" visible="false"><a-torus color="#FFF" radius="0.25" radius-tubular="0.02" rotation="90 0 0" opacity="0.2"></a-torus></a-entity>
-                <a-grid material="opacity: 0.1; color: #444" position="0 0 0" rotation="0 0 0"></a-grid>
+            <a-entity id="world-r" position="0 -0.5 -4">
+                <a-entity id="p-carcaca-r" gltf-model="#model-carcaca-r" position="-1 0.5 0" scale="1 1 1" visible="false"></a-entity>
+                <a-entity id="b-carcaca-r" gltf-model="#model-carcaca-r" position="1 0.5 0" scale="1 1 1" visible="false" material="opacity: 0.2; transparent: true"></a-entity>
+                <a-grid material="opacity: 0.1; color: #444"></a-grid>
             </a-entity>
-            <a-light type="directional" position="1 2 1" intensity="1"></a-light>
-            <a-light type="ambient" intensity="0.8"></a-light>
+            <a-light type="directional" position="1 2 1" intensity="1.2"></a-light>
+            <a-light type="ambient" intensity="0.9"></a-light>
         </a-scene>
     </div>
 
@@ -86,108 +85,83 @@
         const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
         hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 
-        let appState = "MENU"; let gameMode = ""; let step = 1;
+        let appState = "MENU"; let gameMode = ""; 
         let errors = 0; let startTime = 0; let grabbing = false;
-        let p1Snapped = false; let p2Snapped = false;
-        let p1Pos = {x:-0.8, y:0.5}; let p2Pos = {x:-0.8, y:0.1};
-        const targetPos = {x:0.8, y:0.5};
+        let isSnapped = false;
+        let piecePos = {x:-1, y:0.5};
+        const targetPos = {x:1, y:0.5};
 
         hands.onResults((res) => {
             if (!res.multiHandLandmarks || res.multiHandLandmarks.length === 0) {
-                document.querySelectorAll('.hand-cursor').forEach(h => h.setAttribute('position', '10 10 -2'));
+                document.querySelectorAll('[class^="cursor-"]').forEach(h => h.setAttribute('position', '10 10 -2'));
                 return;
             }
             const h = res.multiHandLandmarks[0];
             const x = (h[8].x - 0.5) * 4; const y = (0.5 - h[8].y) * 3;
             const pinch = Math.sqrt(Math.pow(h[4].x - h[8].x, 2) + Math.pow(h[4].y - h[8].y, 2));
-            document.querySelectorAll('.hand-cursor').forEach(dot => dot.setAttribute('position', `${x} ${y} -2`));
+            document.querySelectorAll('[class^="cursor-"]').forEach(dot => dot.setAttribute('position', `${x} ${y} -2`));
 
-            // RESET SOFT (Superior Esquerdo)
-            if (x < -1.0 && y > 0.8 && pinch < 0.1) softReset();
+            if (x < -0.9 && y > 0.6 && pinch < 0.1) softReset();
 
-            // MENU
             if (appState === "MENU" && pinch < 0.1) {
                 if (x < -0.2 && Math.abs(y-0.2) < 0.3) initGame("learn");
                 if (x > 0.2 && Math.abs(y-0.2) < 0.3) initGame("sim");
             }
 
-            // GAMEPLAY
-            if (appState === "PLAY") {
-                let id = step === 1 ? 'p1-obj' : 'p2-obj';
-                if (gameMode === "sim") {
-                    // No simulado, permite pegar qualquer peça não encaixada
-                    const d1 = Math.sqrt(Math.pow(x-p1Pos.x, 2) + Math.pow(y-p1Pos.y, 2));
-                    const d2 = Math.sqrt(Math.pow(x-p2Pos.x, 2) + Math.pow(y-p2Pos.y, 2));
-                    if (!p1Snapped && d1 < 0.6) id = 'p1-obj';
-                    else if (!p2Snapped && d2 < 0.6) id = 'p2-obj';
-                    else id = null;
-                }
+            if (appState === "PLAY" && !isSnapped) {
+                const dist = Math.sqrt(Math.pow(x - piecePos.x, 2) + Math.pow(y - piecePos.y, 2));
 
-                if (id && pinch < 0.08) {
+                if (pinch < 0.08 && dist < 0.8) {
                     grabbing = true;
-                    let p = id === 'p1-obj' ? p1Pos : p2Pos;
-                    p.x = x; p.y = y;
-                    updateWorldPos(id, x, y);
-                    if (gameMode === "learn") updateGlow(step, true);
+                    piecePos.x = x; piecePos.y = y;
+                    updateVisuals(x, y);
+                    if (gameMode === "learn") updateGlow(true);
                 } else if (grabbing) {
                     grabbing = false;
-                    checkSnap(id);
+                    const dTarget = Math.sqrt(Math.pow(piecePos.x - targetPos.x, 2) + Math.pow(piecePos.y - targetPos.y, 2));
+                    if (dTarget < 0.5) snap();
+                    else if (gameMode === "sim") fail();
                 }
             }
         });
 
         function initGame(m) {
-            appState = "PLAY"; gameMode = m; step = 1; errors = 0; startTime = Date.now();
-            document.querySelectorAll('.menu-root').forEach(el => el.setAttribute('visible', 'false'));
-            updateUI(m === "learn" ? "APRENDIZADO: SIGA O BRILHO" : "SIMULADO: MONTAGEM LIVRE", "white");
-            show('p1-obj', true); show('b1-obj', true);
-            if (m === "sim") show('p2-obj', true);
+            appState = "PLAY"; gameMode = m; errors = 0; isSnapped = false; startTime = Date.now();
+            document.querySelectorAll('[class^="menu-"]').forEach(el => el.setAttribute('visible', 'false'));
+            updateUI(m === "learn" ? "APRENDIZADO: ENCAIXE A PEÇA" : "SIMULADO: MONTAGEM", "white");
+            showPiece(true);
         }
 
-        function checkSnap(id) {
-            let p = id === 'p1-obj' ? p1Pos : p2Pos;
-            const dist = Math.sqrt(Math.pow(p.x - targetPos.x, 2) + Math.pow(p.y - targetPos.y, 2));
-
-            if (dist < 0.5) {
-                if (id === "p1-obj") p1Snapped = true; else p2Snapped = true;
-                updateWorldPos(id, targetPos.x, targetPos.y);
-                document.querySelectorAll(`.${id} *`).forEach(el => el.setAttribute('color', '#32CD32'));
-                updateGlow(id === "p1-obj" ? 1 : 2, false);
-
-                if (gameMode === "learn" && step === 1) {
-                    step = 2; updateUI("PASSO 2: INSTALE A CARCAÇA", "white");
-                    show('p2-obj', true); show('b2-obj', true); show('b1-obj', false);
-                } else if (p1Snapped && p2Snapped) {
-                    finishGame();
-                }
-            } else if (gameMode === "sim") {
-                errors++; updateUI(`ERRO! POSIÇÃO INCORRETA (${errors})`, "red");
-                const rx = -0.8; const ry = id === 'p1-obj' ? 0.5 : 0.1;
-                p.x = rx; p.y = ry; updateWorldPos(id, rx, ry);
-            }
-        }
-
-        function finishGame() {
-            appState = "END";
+        function snap() {
+            isSnapped = true;
+            updateVisuals(targetPos.x, targetPos.y);
             const time = Math.floor((Date.now() - startTime)/1000);
-            updateUI(`MISSÃO COMPLETA!\nTempo: ${time}s | Erros: ${errors}`, "#32CD32");
+            updateUI(`SUCESSO! Tempo: ${time}s | Erros: ${errors}`, "#32CD32");
+        }
+
+        function fail() {
+            errors++;
+            updateUI(`ERRO (${errors}) - TENTE NOVAMENTE`, "red");
+            piecePos = {x:-1, y:0.5};
+            updateVisuals(-1, 0.5);
+            setTimeout(() => updateUI(gameMode === "learn" ? "APRENDIZADO" : "SIMULADO", "white"), 1000);
         }
 
         function softReset() {
-            appState = "MENU"; step = 1; grabbing = false; errors = 0;
-            p1Snapped = false; p2Snapped = false;
-            p1Pos = {x:-0.8, y:0.5}; p2Pos = {x:-0.8, y:0.1};
-            document.querySelectorAll('.menu-root').forEach(el => el.setAttribute('visible', 'true'));
-            show('p1-obj', false); show('p2-obj', false); show('b1-obj', false); show('b2-obj', false);
+            appState = "MENU"; isSnapped = false; grabbing = false; errors = 0;
+            piecePos = {x:-1, y:0.5};
+            document.querySelectorAll('[class^="menu-"]').forEach(el => el.setAttribute('visible', 'true'));
+            showPiece(false);
             updateUI("ESCOLHA O MODO", "white");
-            document.querySelectorAll('.p1-obj *').forEach(e => e.setAttribute('color', '#777'));
-            document.querySelectorAll('.p2-obj *').forEach(e => e.setAttribute('color', '#0066FF'));
         }
 
-        function updateWorldPos(cls, x, y) { document.querySelectorAll(`.${cls}`).forEach(el => el.setAttribute('position', `${x} ${y} 0`)); }
-        function updateUI(m, c) { document.querySelectorAll('.status-label').forEach(t => { t.setAttribute('value', m); t.setAttribute('color', c); }); }
-        function show(cls, s) { document.querySelectorAll(`.${cls}`).forEach(el => el.setAttribute('visible', s)); }
-        function updateGlow(s, act) { document.querySelectorAll(`.b${s}-obj`).forEach(el => el.setAttribute('opacity', act ? 0.6 : 0.2)); }
+        function updateVisuals(x, y) { document.querySelectorAll('[id^="p-carcaca-"]').forEach(el => el.setAttribute('position', `${x} ${y} 0`)); }
+        function updateUI(m, c) { document.querySelectorAll('[class^="status-"]').forEach(t => { t.setAttribute('value', m); t.setAttribute('color', c); }); }
+        function showPiece(s) { 
+            document.querySelectorAll('[id^="p-carcaca-"]').forEach(el => el.setAttribute('visible', s)); 
+            document.querySelectorAll('[id^="b-carcaca-"]').forEach(el => el.setAttribute('visible', s)); 
+        }
+        function updateGlow(act) { document.querySelectorAll('[id^="b-carcaca-"]').forEach(el => el.setAttribute('opacity', act ? 0.6 : 0.2)); }
 
         document.getElementById('start-btn').addEventListener('click', async () => {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
