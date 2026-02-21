@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ORBITA - Controle Jedi 5.1</title>
+    <title>ORBITA - Física LERP 5.2</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
@@ -17,7 +17,7 @@
 </head>
 <body>
 
-    <button id="start-btn">INICIAR (PERMITIR SENSORES)</button>
+    <button id="start-btn">INICIAR FÍSICA (PERMITIR SENSORES)</button>
 
     <div class="viewport">
         <video class="webcam" autoplay playsinline muted></video>
@@ -69,20 +69,21 @@
         const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
         hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 
+        // Estrutura LERP: cur = Posição Visual Atual | target = Onde a mão quer que vá
         let pieces = {
-            'cubo': { x: -0.8, y: 0.5, rZ: 0, scale: 0.2, targetX: -0.8 },
-            'esfera': { x: 0, y: 0.5, rZ: 0, scale: 0.12, targetX: 0 },
-            'piramide': { x: 0.8, y: 0.5, rZ: 0, scale: 1, targetX: 0.8 }
+            'cubo': { curX: -0.8, curY: 0.5, curR: 0, curS: 1, targetX: -0.8, targetY: 0.5, targetR: 0, targetS: 1, homeX: -0.8, baseS: 0.2, snapped: false },
+            'esfera': { curX: 0, curY: 0.5, curR: 0, curS: 1, targetX: 0, targetY: 0.5, targetR: 0, targetS: 1, homeX: 0, baseS: 0.12, snapped: false },
+            'piramide': { curX: 0.8, curY: 0.5, curR: 0, curS: 1, targetX: 0.8, targetY: 0.5, targetR: 0, targetS: 1, homeX: 0.8, baseS: 1, snapped: false }
         };
 
         let activePiece = null;
         let actionState = "LIVRE";
         
-        // Variáveis para o Duplo Clique (Reset)
+        // Controle de Duplo Clique Independente
         let lastPinchTime = 0;
         let wasPinching = false;
 
-        // Variáveis para estabilizar rotação e zoom
+        // Estabilizadores de Gestos de 3 Dedos
         let initialHandAngle = 0;
         let initialObjRotation = 0;
         let initialHandY = 0;
@@ -91,7 +92,10 @@
         hands.onResults((res) => {
             if (!res.multiHandLandmarks || res.multiHandLandmarks.length === 0) {
                 document.querySelectorAll('.cursor').forEach(c => c.setAttribute('position', `10 10 -1.5`));
-                updateHUD("MAO LIVRE", "#FFF");
+                if (actionState !== "ENCAIXE") updateHUD("MAO LIVRE", "#FFF");
+                actionState = "LIVRE";
+                activePiece = null;
+                wasPinching = false;
                 return;
             }
 
@@ -99,31 +103,36 @@
             const x = (h[8].x - 0.5) * 4; 
             const y = (0.5 - h[8].y) * 3;
             
+            // Cursor segue a mão instantaneamente (sem Lerp para precisão)
             document.querySelectorAll('.cursor').forEach(c => c.setAttribute('position', `${x} ${y} -1.5`));
 
             const distThumbIndex = Math.hypot(h[4].x - h[8].x, h[4].y - h[8].y);
             const distThumbMiddle = Math.hypot(h[4].x - h[12].x, h[4].y - h[12].y);
 
-            // DETECÇÃO DOS GESTOS
-            const isPinch = distThumbIndex < 0.08 && distThumbMiddle > 0.1; // Só 2 dedos
-            const isThreeFingers = distThumbIndex < 0.08 && distThumbMiddle < 0.08; // 3 dedos juntos
+            const isPinch = distThumbIndex < 0.08 && distThumbMiddle > 0.1; 
+            const isThreeFingers = distThumbIndex < 0.08 && distThumbMiddle < 0.08; 
 
-            // LÓGICA DE DUPLO CLIQUE PARA RESETAR (Fora de peças)
-            let currentTime = Date.now();
-            if (isPinch && !wasPinching && !activePiece) {
-                if (currentTime - lastPinchTime < 500) {
+            // LÓGICA DE DUPLO BELISCÃO (Reset Absoluto)
+            if (isPinch && !wasPinching) {
+                let now = Date.now();
+                if (now - lastPinchTime < 600) { // Janela de 600ms para o segundo clique
                     resetMesa();
                     updateHUD("SISTEMA REINICIADO", "#FF4B4B");
+                    lastPinchTime = 0; 
+                    wasPinching = true;
+                    return; // Interrompe o resto para não pegar peças por acidente
+                } else {
+                    lastPinchTime = now;
                 }
-                lastPinchTime = currentTime;
             }
             wasPinching = isPinch;
 
-            // SELEÇÃO DE PEÇA PRÓXIMA
-            if (actionState === "LIVRE") {
+            // SELEÇÃO DE PEÇA
+            if (actionState === "LIVRE" || actionState === "ENCAIXE") {
                 let closest = null; let minDist = 0.6;
                 for (const key in pieces) {
-                    const d = Math.hypot(x - pieces[key].x, y - pieces[key].y);
+                    if (pieces[key].snapped) continue;
+                    const d = Math.hypot(x - pieces[key].targetX, y - pieces[key].targetY);
                     if (d < minDist) { minDist = d; closest = key; }
                 }
                 activePiece = closest;
@@ -132,86 +141,99 @@
             if (!activePiece) return;
             const p = pieces[activePiece];
 
-            // EXECUÇÃO DAS AÇÕES
+            // AÇÕES
             if (isThreeFingers) {
-                // TRÊS DEDOS: ROTAÇÃO E ZOOM SIMULTÂNEOS
+                // ROTAÇÃO E ZOOM
                 if (actionState !== "MANIPULANDO") {
                     actionState = "MANIPULANDO";
-                    // Captura o ângulo da mão (inclinação do pulso)
                     initialHandAngle = Math.atan2(h[17].y - h[5].y, h[17].x - h[5].x);
-                    initialObjRotation = p.rZ;
-                    // Captura altura da mão para Zoom
+                    initialObjRotation = p.targetR;
                     initialHandY = h[0].y; 
-                    initialObjScale = p.scale;
+                    initialObjScale = p.targetS;
                 }
-
                 updateHUD(`MANIPULANDO: ${activePiece.toUpperCase()}`, "#FFD700");
 
-                // Calcula Rotação (girar o pulso)
                 let currentHandAngle = Math.atan2(h[17].y - h[5].y, h[17].x - h[5].x);
                 let angleDiff = currentHandAngle - initialHandAngle;
-                p.rZ = initialObjRotation - (angleDiff * (180 / Math.PI) * 1.5); // 1.5 é sensibilidade
+                p.targetR = initialObjRotation - (angleDiff * (180 / Math.PI) * 1.5);
 
-                // Calcula Zoom (mover a mão para cima/baixo)
                 let yDiff = h[0].y - initialHandY;
-                let scaleMultiplier = 1 + (yDiff * -3); // -3 inverte o eixo e dá sensibilidade
-                if (scaleMultiplier < 0.3) scaleMultiplier = 0.3; // limite mínimo
-                if (scaleMultiplier > 3.0) scaleMultiplier = 3.0; // limite máximo
-                
-                p.scale = initialObjScale * scaleMultiplier;
-                updateVisuals(activePiece);
+                let scaleMultiplier = 1 + (yDiff * -2.5); 
+                if (scaleMultiplier < 0.3) scaleMultiplier = 0.3; 
+                if (scaleMultiplier > 3.0) scaleMultiplier = 3.0; 
+                p.targetS = initialObjScale * scaleMultiplier;
 
             } else if (isPinch) {
-                // DOIS DEDOS: MOVER
+                // MOVER
                 actionState = "MOVENDO";
                 updateHUD(`MOVENDO: ${activePiece.toUpperCase()}`, "#00AAFF");
-                p.x = x; p.y = y;
-                updateVisuals(activePiece);
+                p.targetX = x; 
+                p.targetY = y;
 
             } else {
-                // SOLTOU TUDO
+                // SOLTOU
                 if (actionState === "MOVENDO") {
-                    const dTarget = Math.hypot(p.x - p.targetX, p.y - (-0.5));
-                    if (dTarget < 0.4) {
-                        p.x = p.targetX; p.y = -0.5; p.rZ = 0; p.scale = getBaseScale(activePiece);
-                        updateVisuals(activePiece);
-                        updateHUD("ENCAIXE PERFEITO", "#32CD32");
+                    const dTarget = Math.hypot(p.targetX - p.homeX, p.targetY - (-0.5));
+                    if (dTarget < 0.35) {
+                        p.targetX = p.homeX; p.targetY = -0.5; p.targetR = 0; p.targetS = 1;
+                        p.snapped = true;
+                        actionState = "ENCAIXE";
+                        updateHUD("ENCAIXADO!", "#32CD32");
+                    } else {
+                        actionState = "LIVRE";
+                        updateHUD("MAO LIVRE", "#FFF");
                     }
+                } else if (actionState === "MANIPULANDO") {
+                    actionState = "LIVRE";
+                    updateHUD("MAO LIVRE", "#FFF");
                 }
-                actionState = "LIVRE";
-                if(!isPinch && !isThreeFingers) updateHUD("MAO LIVRE", "#FFF");
             }
         });
 
         function resetMesa() {
-            pieces['cubo'] = { x: -0.8, y: 0.5, rZ: 0, scale: 0.2, targetX: -0.8 };
-            pieces['esfera'] = { x: 0, y: 0.5, rZ: 0, scale: 0.12, targetX: 0 };
-            pieces['piramide'] = { x: 0.8, y: 0.5, rZ: 0, scale: 1, targetX: 0.8 };
-            ['cubo', 'esfera', 'piramide'].forEach(k => updateVisuals(k));
+            for (const key in pieces) {
+                pieces[key].targetX = pieces[key].homeX;
+                pieces[key].targetY = 0.5;
+                pieces[key].targetR = 0;
+                pieces[key].targetS = 1;
+                pieces[key].snapped = false;
+            }
+            actionState = "LIVRE";
+            activePiece = null;
         }
 
-        function getBaseScale(key) {
-            if(key === 'cubo') return 0.2;
-            if(key === 'esfera') return 0.12;
-            return 1;
-        }
+        // O MOTOR DE FÍSICA (Loop de renderização a 60fps)
+        function physicsLoop() {
+            const suavizacao = 0.15; // Velocidade de absorção (0.1 é pesado, 0.5 é leve)
 
-        function updateVisuals(key) {
-            const p = pieces[key];
-            document.querySelectorAll(`.obj-${key}`).forEach(el => {
-                el.setAttribute('position', `${p.x} ${p.y} 0`);
-                // Aplica rotação (girando no próprio eixo)
-                el.setAttribute('rotation', `0 0 ${p.rZ}`);
+            for (const key in pieces) {
+                const p = pieces[key];
                 
-                // Aplica Zoom (escala)
-                if(key === 'cubo') el.setAttribute('scale', `${p.scale} ${p.scale} ${p.scale}`);
-                if(key === 'esfera') el.setAttribute('radius', `${p.scale}`);
-                if(key === 'piramide') {
-                    el.setAttribute('radius-bottom', `${0.15 * p.scale}`);
-                    el.setAttribute('height', `${0.25 * p.scale}`);
-                }
-            });
+                // Matemática LERP: Posição Atual = Atual + (Alvo - Atual) * Fator
+                p.curX += (p.targetX - p.curX) * suavizacao;
+                p.curY += (p.targetY - p.curY) * suavizacao;
+                p.curR += (p.targetR - p.curR) * suavizacao;
+                p.curS += (p.targetS - p.curS) * suavizacao;
+
+                // Aplica ao HTML (DOM)
+                document.querySelectorAll(`.obj-${key}`).forEach(el => {
+                    el.setAttribute('position', `${p.curX} ${p.curY} 0`);
+                    el.setAttribute('rotation', `0 0 ${p.curR}`);
+                    
+                    let finalScale = p.baseS * p.curS;
+                    if(key === 'cubo') el.setAttribute('scale', `${finalScale} ${finalScale} ${finalScale}`);
+                    if(key === 'esfera') el.setAttribute('radius', `${finalScale}`);
+                    if(key === 'piramide') {
+                        el.setAttribute('radius-bottom', `${0.15 * p.curS}`);
+                        el.setAttribute('height', `${0.25 * p.curS}`);
+                    }
+                });
+            }
+            requestAnimationFrame(physicsLoop);
         }
+        
+        // Inicia o loop de física imediatamente
+        physicsLoop();
 
         function updateHUD(txt, color) {
             document.querySelectorAll('.action-txt').forEach(el => {
@@ -221,14 +243,9 @@
         }
 
         document.getElementById('start-btn').addEventListener('click', async () => {
-            // SOLICITAÇÃO CRÍTICA PARA O GIROSCÓPIO DA APPLE (Para fixar os objetos no mundo)
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                try {
-                    const permission = await DeviceOrientationEvent.requestPermission();
-                    if (permission !== 'granted') alert("Sem giroscópio, as peças vão seguir seu rosto.");
-                } catch (e) { console.error(e); }
+                try { await DeviceOrientationEvent.requestPermission(); } catch (e) { console.error(e); }
             }
-
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
             document.querySelectorAll('.webcam').forEach(v => { v.srcObject = stream; v.play(); });
             document.getElementById('start-btn').style.display = 'none';
