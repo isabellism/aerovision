@@ -3,81 +3,81 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ORBITA - 3D Real Fix</title>
+    <title>AeroVision 4.6 - ORBITA System</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
     <style>
         body { margin: 0; padding: 0; overflow: hidden; background: #000; display: flex; width: 100vw; height: 100vh; }
-        .viewport { 
-            flex: 1; height: 100vh; position: relative; 
-            overflow: hidden; border-right: 1px solid #444; 
-        }
-        video.webcam { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            object-fit: cover; z-index: 1; pointer-events: none;
-        }
+        .viewport { flex: 1; height: 100vh; position: relative; overflow: hidden; border-right: 1px solid #444; }
+        video.webcam { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; pointer-events: none; }
         a-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
-        #start-btn { 
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            padding: 25px 50px; background: #00AAFF; color: white; border: none; 
-            border-radius: 15px; z-index: 10000; font-weight: bold;
-        }
+        #start-btn { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 25px 50px; background: #00AAFF; color: white; border: none; border-radius: 15px; z-index: 10000; font-weight: bold; font-size: 1.2rem; }
     </style>
 </head>
 <body>
 
-    <button id="start-btn">CALIBRAR VISÃO 3D</button>
+    <button id="start-btn">INICIAR SISTEMA ORBITA</button>
 
-    <div class="viewport">
+    <div class="viewport" id="left-eye-container">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-assets>
-                <a-asset-item id="model-item" src="assets/carcaca.glb"></a-asset-item>
-            </a-assets>
+            <a-assets><a-asset-item id="carcaca-asset" src="assets/carcaca.glb"></a-asset-item></a-assets>
 
-            <a-entity camera position="-0.04 0 0" look-controls="enabled: false">
-                <a-sphere class="cursor" radius="0.03" color="white" position="0 0 -1.2"></a-sphere>
-                <a-text id="label-l" value="ESCOLHA O MODO" position="0 0.5 -2" align="center" width="2"></a-text>
-                
-                <a-entity id="menu-l" position="0 0 -1.5">
-                    <a-box id="opt-l" position="-0.4 0 0" scale="0.3 0.15 0.05" color="#00AAFF"></a-box>
-                    <a-box id="opt-s" position="0.4 0 0" scale="0.3 0.15 0.05" color="#FFD700"></a-box>
+            <a-entity camera position="-0.035 1.6 0" look-controls="enabled: false">
+                <a-sphere class="reset-btn" position="-0.8 0.6 -2" radius="0.06" color="red"><a-text value="RESET" align="center" position="0 -0.15 0" width="1.5"></a-text></a-sphere>
+                <a-text class="status-txt" value="ESCOLHA O MODO" position="0 0.5 -2" align="center" width="2"></a-text>
+                <a-sphere class="hand-dot" radius="0.03" color="white" position="10 10 -1"></a-sphere>
+
+                <a-entity class="menu-ui">
+                    <a-entity position="-0.4 0.1 -1.5">
+                        <a-box color="#00AAFF" scale="0.3 0.15 0.05"></a-box>
+                        <a-text value="ENSINO" align="center" position="0 0 0.06" width="1.5"></a-text>
+                    </a-entity>
+                    <a-entity position="0.4 0.1 -1.5">
+                        <a-box color="#FFD700" scale="0.3 0.15 0.05"></a-box>
+                        <a-text value="SIMULADO" align="center" position="0 0 0.06" width="1.5" color="black"></a-text>
+                    </a-entity>
                 </a-entity>
             </a-entity>
 
-            <a-entity id="anchor-l" position="0 -0.3 -2.5">
-                <a-box class="fallback" scale="0.3 0.3 0.3" color="blue" opacity="0.6" visible="true"></a-box>
-                <a-entity class="real-piece" gltf-model="#model-item" scale="1 1 1" visible="false"></a-entity>
-                <a-grid material="opacity: 0.1; color: #444" rotation="0 0 0"></a-grid>
+            <a-entity class="stage" position="0 1 -2.5">
+                <a-box class="fallback-obj" position="-0.6 0 0" scale="0.3 0.3 0.3" color="blue" opacity="0.6" visible="false"></a-box>
+                <a-entity class="real-piece" gltf-model="#carcaca-asset" position="-0.6 0 0" scale="1 1 1" visible="false"></a-entity>
+                <a-entity class="target-ghost" gltf-model="#carcaca-asset" position="0.6 0 0" scale="1 1 1" visible="false" material="opacity: 0.3; transparent: true"></a-entity>
+                <a-grid material="opacity: 0.1; color: #444" position="0 -0.5 0"></a-grid>
             </a-entity>
-
-            <a-light type="ambient" intensity="1"></a-light>
-            <a-light type="directional" position="1 2 1" intensity="0.8"></a-light>
+            <a-light type="ambient" intensity="1.2"></a-light>
         </a-scene>
     </div>
 
-    <div class="viewport" style="border-right: none;">
+    <div class="viewport" id="right-eye-container" style="border-right: none;">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-entity camera position="0.04 0 0" look-controls="enabled: false">
-                <a-sphere class="cursor" radius="0.03" color="white" position="0 0 -1.2"></a-sphere>
-                <a-text id="label-r" value="ESCOLHA O MODO" position="0 0.5 -2" align="center" width="2"></a-text>
+            <a-entity camera position="0.035 1.6 0" look-controls="enabled: false">
+                <a-sphere class="reset-btn" position="-0.8 0.6 -2" radius="0.06" color="red"></a-sphere>
+                <a-text class="status-txt" value="ESCOLHA O MODO" position="0 0.5 -2" align="center" width="2"></a-text>
+                <a-sphere class="hand-dot" radius="0.03" color="white" position="10 10 -1"></a-sphere>
 
-                <a-entity id="menu-r" position="0 0 -1.5">
-                    <a-box position="-0.4 0 0" scale="0.3 0.15 0.05" color="#00AAFF"></a-box>
-                    <a-box position="0.4 0 0" scale="0.3 0.15 0.05" color="#FFD700"></a-box>
+                <a-entity class="menu-ui">
+                    <a-entity position="-0.4 0.1 -1.5">
+                        <a-box color="#00AAFF" scale="0.3 0.15 0.05"></a-box>
+                        <a-text value="ENSINO" align="center" position="0 0 0.06" width="1.5"></a-text>
+                    </a-entity>
+                    <a-entity position="0.4 0.1 -1.5">
+                        <a-box color="#FFD700" scale="0.3 0.15 0.05"></a-box>
+                        <a-text value="SIMULADO" align="center" position="0 0 0.06" width="1.5" color="black"></a-text>
+                    </a-entity>
                 </a-entity>
             </a-entity>
 
-            <a-entity id="anchor-r" position="0 -0.3 -2.5">
-                <a-box class="fallback" scale="0.3 0.3 0.3" color="blue" opacity="0.6" visible="true"></a-box>
-                <a-entity class="real-piece" gltf-model="#model-item" scale="1 1 1" visible="false"></a-entity>
-                <a-grid material="opacity: 0.1; color: #444"></a-grid>
+            <a-entity class="stage" position="0 1 -2.5">
+                <a-box class="fallback-obj" position="-0.6 0 0" scale="0.3 0.3 0.3" color="blue" opacity="0.6" visible="false"></a-box>
+                <a-entity class="real-piece" gltf-model="#carcaca-asset" position="-0.6 0 0" scale="1 1 1" visible="false"></a-entity>
+                <a-entity class="target-ghost" gltf-model="#carcaca-asset" position="0.6 0 0" scale="1 1 1" visible="false" material="opacity: 0.3; transparent: true"></a-entity>
+                <a-grid material="opacity: 0.1; color: #444" position="0 -0.5 0"></a-grid>
             </a-entity>
-
-            <a-light type="ambient" intensity="1"></a-light>
-            <a-light type="directional" position="1 2 1" intensity="0.8"></a-light>
+            <a-light type="ambient" intensity="1.2"></a-light>
         </a-scene>
     </div>
 
@@ -85,63 +85,97 @@
         const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
         hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 
-        let state = "MENU"; let grabbing = false;
-        let currentPos = {x: 0, y: -0.3, z: -2.5};
+        let state = "MENU"; let mode = ""; let grabbing = false;
+        let errors = 0; let startTime = 0;
+        let pPos = {x: -0.6, y: 0}; 
 
         hands.onResults((res) => {
             if (!res.multiHandLandmarks || res.multiHandLandmarks.length === 0) return;
             const h = res.multiHandLandmarks[0];
-            
-            // Mapeamento normalizado para os dois olhos
-            const x = (h[8].x - 0.5) * 3; 
-            const y = (0.5 - h[8].y) * 2;
+            const x = (h[8].x - 0.5) * 3; const y = (0.5 - h[8].y) * 2;
             const pinch = Math.sqrt(Math.pow(h[4].x - h[8].x, 2) + Math.pow(h[4].y - h[8].y, 2));
 
-            // Move os cursores nos dois olhos
-            document.querySelectorAll('.cursor').forEach(c => c.setAttribute('position', `${x} ${y} -1.2`));
+            document.querySelectorAll('.hand-dot').forEach(d => d.setAttribute('position', `${x} ${y} -1`));
 
-            // Lógica de Seleção de Menu
+            // RESET SOFT (Mão no botão vermelho)
+            if (x < -0.7 && y > 0.5 && pinch < 0.1) resetGame();
+
+            // LÓGICA DE MENU
             if (state === "MENU" && pinch < 0.1) {
-                if (Math.abs(y) < 0.3) {
-                   state = "PLAY";
-                   document.querySelectorAll('[id^="menu-"]').forEach(m => m.setAttribute('visible', 'false'));
-                   document.querySelectorAll('[id^="label-"]').forEach(l => l.setAttribute('value', 'MODO ATIVO'));
-                }
+                if (x < -0.1) initGame("ensino");
+                else if (x > 0.1) initGame("simulado");
             }
 
-            // Lógica de Movimentação da Peça
+            // LÓGICA DE PLAY
             if (state === "PLAY") {
-                const dist = Math.sqrt(Math.pow(x - currentPos.x, 2) + Math.pow(y - (currentPos.y + 0.3), 2));
-                
-                if (pinch < 0.08) {
-                    grabbing = true;
-                    // Atualiza a posição da peça nos dois mundos
-                    document.querySelectorAll('[id^="anchor-"]').forEach(el => {
-                        el.setAttribute('position', `${x} ${y - 0.5} -2.5`);
-                    });
+                const distToPiece = Math.sqrt(Math.pow(x - pPos.x, 2) + Math.pow(y - pPos.y, 2));
+                if (pinch < 0.08 && distToPiece < 0.5) {
+                    grabbing = true; pPos.x = x; pPos.y = y;
+                    updatePiecePosition(x, y);
+                } else if (grabbing) {
+                    grabbing = false;
+                    const distToTarget = Math.sqrt(Math.pow(pPos.x - 0.6, 2) + Math.pow(pPos.y - 0, 2));
+                    if (distToTarget < 0.35) snapPiece();
+                    else if (mode === "simulado") recordError();
                 }
             }
         });
 
-        // Função para detectar carregamento do modelo em ambos os olhos
-        const pieces = document.querySelectorAll('.real-piece');
-        pieces.forEach(p => {
-            p.addEventListener('model-loaded', () => {
-                p.setAttribute('visible', 'true');
-                document.querySelectorAll('.fallback').forEach(f => f.setAttribute('visible', 'false'));
-            });
-        });
+        function initGame(m) {
+            state = "PLAY"; mode = m; errors = 0; startTime = Date.now();
+            document.querySelectorAll('.menu-ui').forEach(el => el.setAttribute('visible', 'false'));
+            updateUI(m === "ensino" ? "MODO ENSINO: MOVA A PEÇA" : "MODO SIMULADO: MONTE RÁPIDO");
+            
+            document.querySelectorAll('.target-ghost').forEach(el => el.setAttribute('visible', 'true'));
+            
+            // Verifica se a peça real existe, se não usa o cubo
+            const pieces = document.querySelectorAll('.real-piece');
+            if (pieces[0].getObject3D('mesh')) {
+                pieces.forEach(p => p.setAttribute('visible', 'true'));
+            } else {
+                document.querySelectorAll('.fallback-obj').forEach(f => f.setAttribute('visible', 'true'));
+            }
+        }
+
+        function snapPiece() {
+            updatePiecePosition(0.6, 0);
+            const time = Math.floor((Date.now() - startTime)/1000);
+            updateUI(`SUCESSO!\nTempo: ${time}s | Erros: ${errors}`, "#32CD32");
+            state = "END";
+        }
+
+        function recordError() {
+            errors++;
+            updateUI(`ERRO! (${errors})`, "red");
+            pPos = {x: -0.6, y: 0};
+            setTimeout(() => {
+                updatePiecePosition(-0.6, 0);
+                updateUI("MODO SIMULADO");
+            }, 800);
+        }
+
+        function resetGame() {
+            state = "MENU"; grabbing = false; pPos = {x: -0.6, y: 0};
+            document.querySelectorAll('.menu-ui').forEach(el => el.setAttribute('visible', 'true'));
+            document.querySelectorAll('.real-piece, .fallback-obj, .target-ghost').forEach(el => el.setAttribute('visible', 'false'));
+            updateUI("ESCOLHA O MODO");
+            updatePiecePosition(-0.6, 0);
+        }
+
+        function updatePiecePosition(x, y) {
+            document.querySelectorAll('.real-piece, .fallback-obj').forEach(el => el.setAttribute('position', `${x} ${y} 0`));
+        }
+
+        function updateUI(m, c = "white") {
+            document.querySelectorAll('.status-txt').forEach(t => { t.setAttribute('value', m); t.setAttribute('color', c); });
+        }
 
         document.getElementById('start-btn').addEventListener('click', async () => {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
             document.querySelectorAll('.webcam').forEach(v => { v.srcObject = stream; v.play(); });
             document.getElementById('start-btn').style.display = 'none';
-            
-            const vid = document.querySelector('.webcam');
-            function run() { 
-                if (vid.readyState >= 2) hands.send({image: vid}); 
-                requestAnimationFrame(run); 
-            }
+            const vid = document.querySelectorAll('.webcam')[0];
+            function run() { if (vid.readyState >= 2) hands.send({image: vid}); requestAnimationFrame(run); }
             run();
         });
     </script>
