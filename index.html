@@ -3,9 +3,22 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ORBITA - Física LERP 5.2</title>
+    <title>ORBITA - Mista Simulada 5.3</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+
+    <script>
+        AFRAME.registerComponent('mascara-invisivel', {
+            init: function () {
+                const mesh = this.el.getObject3D('mesh');
+                if (mesh) {
+                    mesh.material.colorWrite = false; // Não pinta cor nenhuma
+                    mesh.material.depthWrite = true;  // Mas bloqueia o que estiver atrás
+                    mesh.renderOrder = -1;            // Força a renderizar antes das peças
+                }
+            }
+        });
+    </script>
 
     <style>
         body { margin: 0; padding: 0; overflow: hidden; background: #000; display: flex; width: 100vw; height: 100vh; }
@@ -17,14 +30,17 @@
 </head>
 <body>
 
-    <button id="start-btn">INICIAR FÍSICA (PERMITIR SENSORES)</button>
+    <button id="start-btn">INICIAR REALIDADE MISTA</button>
 
     <div class="viewport">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
             <a-entity id="cam-l" camera position="-0.035 1.6 0" look-controls="enabled: true; magicWindowTrackingEnabled: true">
                 <a-text class="action-txt" value="MAO LIVRE" position="0 0.6 -2" align="center" width="2.5" color="#FFF"></a-text>
+                
                 <a-sphere class="cursor" radius="0.03" color="white" position="10 10 -1.5"></a-sphere>
+                
+                <a-sphere class="dedao-fantasma" radius="0.05" mascara-invisivel position="10 10 -1.4"></a-sphere>
             </a-entity>
 
             <a-entity position="0 1 -2.5">
@@ -47,7 +63,9 @@
         <a-scene embedded vr-mode-ui="enabled: false">
             <a-entity id="cam-r" camera position="0.035 1.6 0" look-controls="enabled: true; magicWindowTrackingEnabled: true">
                 <a-text class="action-txt" value="MAO LIVRE" position="0 0.6 -2" align="center" width="2.5" color="#FFF"></a-text>
+                
                 <a-sphere class="cursor" radius="0.03" color="white" position="10 10 -1.5"></a-sphere>
+                <a-sphere class="dedao-fantasma" radius="0.05" mascara-invisivel position="10 10 -1.4"></a-sphere>
             </a-entity>
 
             <a-entity position="0 1 -2.5">
@@ -69,7 +87,6 @@
         const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
         hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 
-        // Estrutura LERP: cur = Posição Visual Atual | target = Onde a mão quer que vá
         let pieces = {
             'cubo': { curX: -0.8, curY: 0.5, curR: 0, curS: 1, targetX: -0.8, targetY: 0.5, targetR: 0, targetS: 1, homeX: -0.8, baseS: 0.2, snapped: false },
             'esfera': { curX: 0, curY: 0.5, curR: 0, curS: 1, targetX: 0, targetY: 0.5, targetR: 0, targetS: 1, homeX: 0, baseS: 0.12, snapped: false },
@@ -78,12 +95,8 @@
 
         let activePiece = null;
         let actionState = "LIVRE";
-        
-        // Controle de Duplo Clique Independente
         let lastPinchTime = 0;
         let wasPinching = false;
-
-        // Estabilizadores de Gestos de 3 Dedos
         let initialHandAngle = 0;
         let initialObjRotation = 0;
         let initialHandY = 0;
@@ -92,6 +105,7 @@
         hands.onResults((res) => {
             if (!res.multiHandLandmarks || res.multiHandLandmarks.length === 0) {
                 document.querySelectorAll('.cursor').forEach(c => c.setAttribute('position', `10 10 -1.5`));
+                document.querySelectorAll('.dedao-fantasma').forEach(d => d.setAttribute('position', `10 10 -1.4`));
                 if (actionState !== "ENCAIXE") updateHUD("MAO LIVRE", "#FFF");
                 actionState = "LIVRE";
                 activePiece = null;
@@ -100,34 +114,34 @@
             }
 
             const h = res.multiHandLandmarks[0];
+            
+            // Posição do Dedo Indicador (Cursor)
             const x = (h[8].x - 0.5) * 4; 
             const y = (0.5 - h[8].y) * 3;
-            
-            // Cursor segue a mão instantaneamente (sem Lerp para precisão)
             document.querySelectorAll('.cursor').forEach(c => c.setAttribute('position', `${x} ${y} -1.5`));
+
+            // Posição do Polegar (Dedão Fantasma - Fica um pouco mais perto da câmera: -1.4)
+            const thumbX = (h[4].x - 0.5) * 4;
+            const thumbY = (0.5 - h[4].y) * 3;
+            document.querySelectorAll('.dedao-fantasma').forEach(d => d.setAttribute('position', `${thumbX} ${thumbY} -1.4`));
 
             const distThumbIndex = Math.hypot(h[4].x - h[8].x, h[4].y - h[8].y);
             const distThumbMiddle = Math.hypot(h[4].x - h[12].x, h[4].y - h[12].y);
-
             const isPinch = distThumbIndex < 0.08 && distThumbMiddle > 0.1; 
             const isThreeFingers = distThumbIndex < 0.08 && distThumbMiddle < 0.08; 
 
-            // LÓGICA DE DUPLO BELISCÃO (Reset Absoluto)
+            // DUPLO CLIQUE (Reset)
             if (isPinch && !wasPinching) {
                 let now = Date.now();
-                if (now - lastPinchTime < 600) { // Janela de 600ms para o segundo clique
+                if (now - lastPinchTime < 600) {
                     resetMesa();
                     updateHUD("SISTEMA REINICIADO", "#FF4B4B");
-                    lastPinchTime = 0; 
-                    wasPinching = true;
-                    return; // Interrompe o resto para não pegar peças por acidente
-                } else {
-                    lastPinchTime = now;
-                }
+                    lastPinchTime = 0; wasPinching = true; return; 
+                } else { lastPinchTime = now; }
             }
             wasPinching = isPinch;
 
-            // SELEÇÃO DE PEÇA
+            // SELEÇÃO
             if (actionState === "LIVRE" || actionState === "ENCAIXE") {
                 let closest = null; let minDist = 0.6;
                 for (const key in pieces) {
@@ -143,7 +157,6 @@
 
             // AÇÕES
             if (isThreeFingers) {
-                // ROTAÇÃO E ZOOM
                 if (actionState !== "MANIPULANDO") {
                     actionState = "MANIPULANDO";
                     initialHandAngle = Math.atan2(h[17].y - h[5].y, h[17].x - h[5].x);
@@ -164,87 +177,63 @@
                 p.targetS = initialObjScale * scaleMultiplier;
 
             } else if (isPinch) {
-                // MOVER
                 actionState = "MOVENDO";
                 updateHUD(`MOVENDO: ${activePiece.toUpperCase()}`, "#00AAFF");
                 p.targetX = x; 
                 p.targetY = y;
-
             } else {
-                // SOLTOU
                 if (actionState === "MOVENDO") {
                     const dTarget = Math.hypot(p.targetX - p.homeX, p.targetY - (-0.5));
                     if (dTarget < 0.35) {
-                        p.targetX = p.homeX; p.targetY = -0.5; p.targetR = 0; p.targetS = 1;
-                        p.snapped = true;
+                        p.targetX = p.homeX; p.targetY = -0.5; p.targetR = 0; p.targetS = 1; p.snapped = true;
                         actionState = "ENCAIXE";
                         updateHUD("ENCAIXADO!", "#32CD32");
                     } else {
-                        actionState = "LIVRE";
-                        updateHUD("MAO LIVRE", "#FFF");
+                        actionState = "LIVRE"; updateHUD("MAO LIVRE", "#FFF");
                     }
                 } else if (actionState === "MANIPULANDO") {
-                    actionState = "LIVRE";
-                    updateHUD("MAO LIVRE", "#FFF");
+                    actionState = "LIVRE"; updateHUD("MAO LIVRE", "#FFF");
                 }
             }
         });
 
         function resetMesa() {
             for (const key in pieces) {
-                pieces[key].targetX = pieces[key].homeX;
-                pieces[key].targetY = 0.5;
-                pieces[key].targetR = 0;
-                pieces[key].targetS = 1;
-                pieces[key].snapped = false;
+                pieces[key].targetX = pieces[key].homeX; pieces[key].targetY = 0.5;
+                pieces[key].targetR = 0; pieces[key].targetS = 1; pieces[key].snapped = false;
             }
-            actionState = "LIVRE";
-            activePiece = null;
+            actionState = "LIVRE"; activePiece = null;
         }
 
-        // O MOTOR DE FÍSICA (Loop de renderização a 60fps)
         function physicsLoop() {
-            const suavizacao = 0.15; // Velocidade de absorção (0.1 é pesado, 0.5 é leve)
-
+            const suavizacao = 0.15;
             for (const key in pieces) {
                 const p = pieces[key];
-                
-                // Matemática LERP: Posição Atual = Atual + (Alvo - Atual) * Fator
                 p.curX += (p.targetX - p.curX) * suavizacao;
                 p.curY += (p.targetY - p.curY) * suavizacao;
                 p.curR += (p.targetR - p.curR) * suavizacao;
                 p.curS += (p.targetS - p.curS) * suavizacao;
 
-                // Aplica ao HTML (DOM)
                 document.querySelectorAll(`.obj-${key}`).forEach(el => {
                     el.setAttribute('position', `${p.curX} ${p.curY} 0`);
                     el.setAttribute('rotation', `0 0 ${p.curR}`);
-                    
                     let finalScale = p.baseS * p.curS;
                     if(key === 'cubo') el.setAttribute('scale', `${finalScale} ${finalScale} ${finalScale}`);
                     if(key === 'esfera') el.setAttribute('radius', `${finalScale}`);
-                    if(key === 'piramide') {
-                        el.setAttribute('radius-bottom', `${0.15 * p.curS}`);
-                        el.setAttribute('height', `${0.25 * p.curS}`);
-                    }
+                    if(key === 'piramide') { el.setAttribute('radius-bottom', `${0.15 * p.curS}`); el.setAttribute('height', `${0.25 * p.curS}`); }
                 });
             }
             requestAnimationFrame(physicsLoop);
         }
-        
-        // Inicia o loop de física imediatamente
         physicsLoop();
 
         function updateHUD(txt, color) {
-            document.querySelectorAll('.action-txt').forEach(el => {
-                el.setAttribute('value', txt);
-                el.setAttribute('color', color);
-            });
+            document.querySelectorAll('.action-txt').forEach(el => { el.setAttribute('value', txt); el.setAttribute('color', color); });
         }
 
         document.getElementById('start-btn').addEventListener('click', async () => {
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                try { await DeviceOrientationEvent.requestPermission(); } catch (e) { console.error(e); }
+                try { await DeviceOrientationEvent.requestPermission(); } catch (e) {}
             }
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
             document.querySelectorAll('.webcam').forEach(v => { v.srcObject = stream; v.play(); });
