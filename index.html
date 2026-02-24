@@ -1,221 +1,197 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>ORBITA - Inspeção Aeroespacial</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ORBITA - Conforto Visual 5.4</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
-<script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-
-    body { margin: 0; overflow: hidden; background: #000; font-family: 'Share Tech Mono', monospace; user-select: none; }
-    video { display: none; }
-    
-    /* TELA DE INÍCIO */
-    #startBtn {
-        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        padding: 20px 40px; background: rgba(0, 170, 255, 0.2); border: 2px solid #00AAFF;
-        color: #00AAFF; font-size: 18px; border-radius: 5px; z-index: 9999;
-        font-family: 'Share Tech Mono', monospace; cursor: pointer; text-transform: uppercase;
-        box-shadow: 0 0 15px rgba(0, 170, 255, 0.5); transition: 0.3s;
-    }
-    #startBtn:active { background: #00AAFF; color: #000; }
-
-    /* HUD (HEADS-UP DISPLAY) AEROESPACIAL */
-    #hud {
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        pointer-events: none; z-index: 1000; display: none;
-        box-sizing: border-box; border: 2px solid rgba(0, 170, 255, 0.3);
-    }
-    
-    .hud-corner { position: absolute; width: 30px; height: 30px; border: 3px solid #00AAFF; }
-    .tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
-    .tr { top: 10px; right: 10px; border-left: none; border-bottom: none; }
-    .bl { bottom: 10px; left: 10px; border-right: none; border-top: none; }
-    .br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
-
-    #status-box {
-        position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-        background: rgba(0, 0, 0, 0.6); border: 1px solid #00AAFF; padding: 10px 20px;
-        color: #00AAFF; font-size: 1.2rem; text-align: center; border-radius: 4px;
-        text-shadow: 0 0 5px #00AAFF; letter-spacing: 2px;
-    }
-
-    #telemetry {
-        position: absolute; bottom: 20px; left: 20px;
-        background: rgba(0, 0, 0, 0.5); border-left: 3px solid #00AAFF;
-        padding: 10px; color: #fff; font-size: 0.9rem; line-height: 1.5;
-    }
-    .val { color: #00AAFF; font-weight: bold; }
-</style>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background: #000; display: flex; width: 100vw; height: 100vh; }
+        .viewport { flex: 1; height: 100vh; position: relative; overflow: hidden; border-right: 1px solid #333; }
+        video.webcam { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; pointer-events: none; }
+        a-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
+        #start-btn { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 25px 40px; background: #00AAFF; color: white; border: none; border-radius: 12px; z-index: 10000; font-weight: bold; font-size: 1.2rem; }
+    </style>
 </head>
-
 <body>
 
-<button id="startBtn">INICIAR DIAGNÓSTICO ORBITA</button>
+    <button id="start-btn">INICIAR (SISTEMA ESTÁVEL)</button>
 
-<div id="hud">
-    <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
-    <div class="hud-corner bl"></div><div class="hud-corner br"></div>
-    <div id="status-box">SCANNER ATIVO</div>
-    <div id="telemetry">
-        <div>MODO: <span id="modo-txt" class="val">AGUARDANDO MÃO</span></div>
-        <div>ESCALA: <span id="scale-txt" class="val">1.00x</span></div>
-        <div>EIXO Y (Giro): <span id="rot-txt" class="val">0.0°</span></div>
-        <div>ALVO TRAVADO: <span class="val">20MM_HEX_SCREW</span></div>
+    <div class="viewport">
+        <video class="webcam" autoplay playsinline muted></video>
+        <a-scene embedded vr-mode-ui="enabled: false">
+            <a-entity id="cam-l" camera position="-0.035 1.6 0" look-controls="enabled: true; magicWindowTrackingEnabled: true">
+                <a-entity position="0.035 0 0">
+                    <a-text class="action-txt" value="MAO LIVRE" position="0 0.6 -2" align="center" width="2.5" color="#FFF"></a-text>
+                    <a-sphere class="cursor" radius="0.03" color="white" position="10 10 -1.5"></a-sphere>
+                </a-entity>
+            </a-entity>
+
+            <a-entity position="0 1 -2.5">
+                <a-box position="-0.8 -0.5 0" scale="0.2 0.2 0.2" color="white" opacity="0.3"></a-box>
+                <a-sphere position="0 -0.5 0" radius="0.12" color="white" opacity="0.3"></a-sphere>
+                <a-cone position="0.8 -0.5 0" radius-bottom="0.15" height="0.25" color="white" opacity="0.3"></a-cone>
+
+                <a-box class="obj-cubo" position="-0.8 0.5 0" scale="0.2 0.2 0.2" color="#FF4B4B"></a-box>
+                <a-sphere class="obj-esfera" position="0 0.5 0" radius="0.12" color="#00AAFF"></a-sphere>
+                <a-cone class="obj-piramide" position="0.8 0.5 0" radius-bottom="0.15" height="0.25" color="#32CD32"></a-cone>
+                <a-grid material="opacity: 0.15; color: #555" position="0 -0.6 0"></a-grid>
+            </a-entity>
+            <a-light type="directional" position="1 2 1" intensity="1.5"></a-light>
+            <a-light type="ambient" intensity="0.6"></a-light>
+        </a-scene>
     </div>
-</div>
 
-<video id="webcam" autoplay playsinline muted></video>
+    <div class="viewport" style="border-right: none;">
+        <video class="webcam" autoplay playsinline muted></video>
+        <a-scene embedded vr-mode-ui="enabled: false">
+            <a-entity id="cam-r" camera position="0.035 1.6 0" look-controls="enabled: true; magicWindowTrackingEnabled: true">
+                <a-entity position="-0.035 0 0">
+                    <a-text class="action-txt" value="MAO LIVRE" position="0 0.6 -2" align="center" width="2.5" color="#FFF"></a-text>
+                    <a-sphere class="cursor" radius="0.03" color="white" position="10 10 -1.5"></a-sphere>
+                </a-entity>
+            </a-entity>
 
-<a-scene embedded vr-mode-ui="enabled:false">
-    <a-assets>
-        <a-asset-item id="parafuso-glb" src="assets/20mm_hex4gon_screw_with_nut.glb"></a-asset-item>
-    </a-assets>
+            <a-entity position="0 1 -2.5">
+                <a-box position="-0.8 -0.5 0" scale="0.2 0.2 0.2" color="white" opacity="0.3"></a-box>
+                <a-sphere position="0 -0.5 0" radius="0.12" color="white" opacity="0.3"></a-sphere>
+                <a-cone position="0.8 -0.5 0" radius-bottom="0.15" height="0.25" color="white" opacity="0.3"></a-cone>
 
-    <a-entity id="cameraRig" position="0 1.6 0">
-        <a-camera look-controls="enabled: false"></a-camera>
-        <a-ring radius-inner="0.015" radius-outer="0.02" color="#00AAFF" position="0 0 -1" opacity="0.5"></a-ring>
-        <a-sphere id="cursor" radius="0.02" color="#FF0055" position="10 10 -1.5" material="emissive: #FF0055; emissiveIntensity: 2"></a-sphere>
-    </a-entity>
+                <a-box class="obj-cubo" position="-0.8 0.5 0" scale="0.2 0.2 0.2" color="#FF4B4B"></a-box>
+                <a-sphere class="obj-esfera" position="0 0.5 0" radius="0.12" color="#00AAFF"></a-sphere>
+                <a-cone class="obj-piramide" position="0.8 0.5 0" radius-bottom="0.15" height="0.25" color="#32CD32"></a-cone>
+                <a-grid material="opacity: 0.15; color: #555" position="0 -0.6 0"></a-grid>
+            </a-entity>
+            <a-light type="directional" position="1 2 1" intensity="1.5"></a-light>
+            <a-light type="ambient" intensity="0.6"></a-light>
+        </a-scene>
+    </div>
 
-    <a-light type="ambient" color="#224455" intensity="1.5"></a-light>
-    <a-light type="directional" color="#ffffff" position="1 3 2" intensity="2.5"></a-light>
-    <a-light type="point" color="#00AAFF" position="-1 1 -1" intensity="1"></a-light>
+    <script>
+        const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 
-    <a-entity position="0 1 -2.5">
-        <a-cylinder radius="0.8" height="0.05" position="0 -0.5 0" color="#00AAFF" wireframe="true" opacity="0.3"></a-cylinder>
-        <a-circle radius="0.6" position="0 -0.49 0" rotation="-90 0 0" color="#00AAFF" opacity="0.1"></a-circle>
-        
-        <a-entity id="meu-parafuso" gltf-model="#parafuso-glb" position="0 0 0" scale="1 1 1"></a-entity>
-    </a-entity>
+        let pieces = {
+            'cubo': { curX: -0.8, curY: 0.5, curR: 0, curS: 1, targetX: -0.8, targetY: 0.5, targetR: 0, targetS: 1, homeX: -0.8, baseS: 0.2, snapped: false },
+            'esfera': { curX: 0, curY: 0.5, curR: 0, curS: 1, targetX: 0, targetY: 0.5, targetR: 0, targetS: 1, homeX: 0, baseS: 0.12, snapped: false },
+            'piramide': { curX: 0.8, curY: 0.5, curR: 0, curS: 1, targetX: 0.8, targetY: 0.5, targetR: 0, targetS: 1, homeX: 0.8, baseS: 1, snapped: false }
+        };
 
-</a-scene>
+        let activePiece = null; let actionState = "LIVRE";
+        let lastPinchTime = 0; let wasPinching = false;
+        let initialHandAngle = 0; let initialObjRotation = 0;
+        let initialHandY = 0; let initialObjScale = 1;
 
-<script>
-const hands = new Hands({ locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
+        hands.onResults((res) => {
+            if (!res.multiHandLandmarks || res.multiHandLandmarks.length === 0) {
+                document.querySelectorAll('.cursor').forEach(c => c.setAttribute('position', `10 10 -1.5`));
+                if (actionState !== "ENCAIXE") updateHUD("MAO LIVRE", "#FFF");
+                actionState = "LIVRE"; activePiece = null; wasPinching = false; return;
+            }
 
-const obj = document.querySelector("#meu-parafuso");
-const cursor = document.querySelector("#cursor");
+            const h = res.multiHandLandmarks[0];
+            const x = (h[8].x - 0.5) * 4; const y = (0.5 - h[8].y) * 3;
+            document.querySelectorAll('.cursor').forEach(c => c.setAttribute('position', `${x} ${y} -1.5`));
 
-// DOM do HUD
-const hudStatus = document.getElementById("status-box");
-const txtModo = document.getElementById("modo-txt");
-const txtScale = document.getElementById("scale-txt");
-const txtRot = document.getElementById("rot-txt");
+            const distThumbIndex = Math.hypot(h[4].x - h[8].x, h[4].y - h[8].y);
+            const distThumbMiddle = Math.hypot(h[4].x - h[12].x, h[4].y - h[12].y);
+            const isPinch = distThumbIndex < 0.08 && distThumbMiddle > 0.1; 
+            const isThreeFingers = distThumbIndex < 0.08 && distThumbMiddle < 0.08; 
 
-// FÍSICA LERP
-let state = {
-    curX: 0, curY: 0, curRot: 0, curScale: 1,
-    tarX: 0, tarY: 0, tarRot: 0, tarScale: 1
-};
+            // DUPLO CLIQUE (Reset Silencioso)
+            if (isPinch && !wasPinching) {
+                let now = Date.now();
+                if (now - lastPinchTime < 600) {
+                    resetMesa(); updateHUD("SISTEMA REINICIADO", "#FF4B4B");
+                    lastPinchTime = 0; wasPinching = true; return; 
+                } else { lastPinchTime = now; }
+            }
+            wasPinching = isPinch;
 
-let isManipulating = false;
-let initialHandAngle = 0, initialObjRotation = 0;
-let initialHandY = 0, initialObjScale = 1;
+            if (actionState === "LIVRE" || actionState === "ENCAIXE") {
+                let closest = null; let minDist = 0.6;
+                for (const key in pieces) {
+                    if (pieces[key].snapped) continue;
+                    const d = Math.hypot(x - pieces[key].targetX, y - pieces[key].targetY);
+                    if (d < minDist) { minDist = d; closest = key; }
+                }
+                activePiece = closest;
+            }
 
-hands.onResults(results => {
-    if (!results.multiHandLandmarks) {
-        cursor.setAttribute("position", `10 10 -1.5`);
-        txtModo.innerText = "STANDBY";
-        txtModo.style.color = "#888";
-        hudStatus.style.borderColor = "#00AAFF";
-        hudStatus.style.boxShadow = "0 0 5px #00AAFF";
-        isManipulating = false;
-        return;
-    }
+            if (!activePiece) return;
+            const p = pieces[activePiece];
 
-    const hand = results.multiHandLandmarks[0];
-    const x = (hand[8].x - 0.5) * 4;
-    const y = (0.5 - hand[8].y) * 3;
-    cursor.setAttribute("position", `${x} ${y} -1.5`);
+            if (isThreeFingers) {
+                if (actionState !== "MANIPULANDO") {
+                    actionState = "MANIPULANDO";
+                    initialHandAngle = Math.atan2(h[17].y - h[5].y, h[17].x - h[5].x); initialObjRotation = p.targetR;
+                    initialHandY = h[0].y; initialObjScale = p.targetS;
+                }
+                updateHUD(`MANIPULANDO: ${activePiece.toUpperCase()}`, "#FFD700");
+                let currentHandAngle = Math.atan2(h[17].y - h[5].y, h[17].x - h[5].x);
+                p.targetR = initialObjRotation - ((currentHandAngle - initialHandAngle) * (180 / Math.PI) * 1.5);
+                
+                let scaleMultiplier = 1 + ((h[0].y - initialHandY) * -2.5); 
+                p.targetS = initialObjScale * Math.max(0.3, Math.min(3.0, scaleMultiplier));
 
-    const pinchDist = Math.hypot(hand[4].x - hand[8].x, hand[4].y - hand[8].y);
-    const middleDist = Math.hypot(hand[4].x - hand[12].x, hand[4].y - hand[12].y);
+            } else if (isPinch) {
+                actionState = "MOVENDO"; updateHUD(`MOVENDO: ${activePiece.toUpperCase()}`, "#00AAFF");
+                p.targetX = x; p.targetY = y;
+            } else {
+                if (actionState === "MOVENDO") {
+                    const dTarget = Math.hypot(p.targetX - p.homeX, p.targetY - (-0.5));
+                    if (dTarget < 0.35) {
+                        p.targetX = p.homeX; p.targetY = -0.5; p.targetR = 0; p.targetS = 1; p.snapped = true;
+                        actionState = "ENCAIXE"; updateHUD("ENCAIXADO!", "#32CD32");
+                    } else { actionState = "LIVRE"; updateHUD("MAO LIVRE", "#FFF"); }
+                } else if (actionState === "MANIPULANDO") { actionState = "LIVRE"; updateHUD("MAO LIVRE", "#FFF"); }
+            }
+        });
 
-    const isPinching = pinchDist < 0.08 && middleDist > 0.1; 
-    const isThreeFingers = pinchDist < 0.08 && middleDist < 0.08; 
-
-    if (isThreeFingers) {
-        if (!isManipulating) {
-            isManipulating = true;
-            initialHandAngle = Math.atan2(hand[17].y - hand[5].y, hand[17].x - hand[5].x);
-            initialObjRotation = state.tarRot;
-            initialHandY = hand[0].y; 
-            initialObjScale = state.tarScale;
-            hudStatus.style.borderColor = "#FFD700";
-            hudStatus.style.boxShadow = "0 0 15px #FFD700";
+        function resetMesa() {
+            for (const key in pieces) {
+                pieces[key].targetX = pieces[key].homeX; pieces[key].targetY = 0.5;
+                pieces[key].targetR = 0; pieces[key].targetS = 1; pieces[key].snapped = false;
+            }
+            actionState = "LIVRE"; activePiece = null;
         }
-        txtModo.innerText = "ANÁLISE ESTRUTURAL (Giro/Zoom)";
-        txtModo.style.color = "#FFD700";
-        
-        let currentHandAngle = Math.atan2(hand[17].y - hand[5].y, hand[17].x - hand[5].x);
-        state.tarRot = initialObjRotation - ((currentHandAngle - initialHandAngle) * (180 / Math.PI) * 1.5);
-        
-        let scaleMultiplier = 1 + ((hand[0].y - initialHandY) * -3.0); 
-        state.tarScale = initialObjScale * Math.max(0.1, Math.min(10.0, scaleMultiplier));
 
-    } else if (isPinching) {
-        txtModo.innerText = "REPOSICIONAMENTO";
-        txtModo.style.color = "#FF0055";
-        hudStatus.style.borderColor = "#FF0055";
-        hudStatus.style.boxShadow = "0 0 15px #FF0055";
-        state.tarX = x; state.tarY = y;
-        isManipulating = false;
-    } else {
-        txtModo.innerText = "RASTREIO ATIVO";
-        txtModo.style.color = "#00AAFF";
-        hudStatus.style.borderColor = "#00AAFF";
-        hudStatus.style.boxShadow = "0 0 5px #00AAFF";
-        isManipulating = false;
-    }
-});
+        function physicsLoop() {
+            const suavizacao = 0.15;
+            for (const key in pieces) {
+                const p = pieces[key];
+                p.curX += (p.targetX - p.curX) * suavizacao; p.curY += (p.targetY - p.curY) * suavizacao;
+                p.curR += (p.targetR - p.curR) * suavizacao; p.curS += (p.targetS - p.curS) * suavizacao;
 
-// MOTOR DE FÍSICA E ATUALIZAÇÃO DA TELEMETRIA
-const smooth = 0.15;
-function animate() {
-    state.curX += (state.tarX - state.curX) * smooth;
-    state.curY += (state.tarY - state.curY) * smooth;
-    state.curRot += (state.tarRot - state.curRot) * smooth;
-    state.curScale += (state.tarScale - state.curScale) * smooth;
+                document.querySelectorAll(`.obj-${key}`).forEach(el => {
+                    el.setAttribute('position', `${p.curX} ${p.curY} 0`);
+                    el.setAttribute('rotation', `0 0 ${p.curR}`);
+                    let finalScale = p.baseS * p.curS;
+                    if(key === 'cubo') el.setAttribute('scale', `${finalScale} ${finalScale} ${finalScale}`);
+                    if(key === 'esfera') el.setAttribute('radius', `${finalScale}`);
+                    if(key === 'piramide') { el.setAttribute('radius-bottom', `${0.15 * p.curS}`); el.setAttribute('height', `${0.25 * p.curS}`); }
+                });
+            }
+            requestAnimationFrame(physicsLoop);
+        }
+        physicsLoop();
 
-    obj.setAttribute("position", `${state.curX} ${state.curY} 0`);
-    obj.setAttribute("rotation", `0 ${state.curRot} 0`); 
-    obj.setAttribute("scale", `${state.curScale} ${state.curScale} ${state.curScale}`);
+        function updateHUD(txt, color) { document.querySelectorAll('.action-txt').forEach(el => { el.setAttribute('value', txt); el.setAttribute('color', color); }); }
 
-    // Atualiza os dados na tela do HUD
-    txtScale.innerText = state.curScale.toFixed(2) + "x";
-    txtRot.innerText = (state.curRot % 360).toFixed(1) + "°";
-
-    requestAnimationFrame(animate);
-}
-
-document.getElementById("startBtn").addEventListener("click", async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-    const video = document.getElementById("webcam");
-    video.srcObject = stream;
-    
-    document.getElementById("startBtn").style.display = "none";
-    document.getElementById("hud").style.display = "block"; // Mostra a interface
-    
-    function processVideo() {
-        if (video.readyState >= 2) hands.send({ image: video });
-        requestAnimationFrame(processVideo);
-    }
-    processVideo();
-    animate(); 
-});
-
-obj.addEventListener('model-error', () => {
-    document.getElementById("status-box").innerText = "FALHA NO ARQUIVO .GLB";
-    document.getElementById("status-box").style.borderColor = "red";
-    document.getElementById("status-box").style.color = "red";
-});
-</script>
-
+        document.getElementById('start-btn').addEventListener('click', async () => {
+            // Remoção do Alert nativo que travava a tela
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                try { await DeviceOrientationEvent.requestPermission(); } catch (e) { console.warn("Permissão de giroscópio negada ou ignorada."); }
+            }
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            document.querySelectorAll('.webcam').forEach(v => { v.srcObject = stream; v.play(); });
+            document.getElementById('start-btn').style.display = 'none';
+            const vid = document.querySelectorAll('.webcam')[0];
+            function run() { if (vid.readyState >= 2) hands.send({image: vid}); requestAnimationFrame(run); }
+            run();
+        });
+    </script>
 </body>
 </html>
