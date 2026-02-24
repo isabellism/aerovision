@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ORBITA - Peças Mecânicas VR</title>
+    <title>ORBITA - Rosqueamento VR</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 
@@ -17,30 +17,21 @@
 </head>
 <body>
 
-    <button id="start-btn">INICIAR (SISTEMA ESTÁVEL)</button>
+    <button id="start-btn">INICIAR MONTAGEM (SEM ALERTAS)</button>
 
     <div class="viewport">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-assets>
-                <a-asset-item id="modelo-cad" src="assets/20mm_hex4gon_screw_with_nut.glb"></a-asset-item>
-            </a-assets>
-
-            <a-entity id="cam-l" camera position="-0.035 1.6 0" look-controls="enabled: true; magicWindowTrackingEnabled: true">
+            <a-entity id="cam-l" camera position="-0.035 1.6 0" look-controls="enabled: false">
                 <a-entity position="0.035 0 0">
                     <a-text class="action-txt" value="MAO LIVRE" position="0 0.6 -2" align="center" width="2.5" color="#FFF"></a-text>
-                    <a-sphere class="cursor" radius="0.03" color="white" position="10 10 -1.5"></a-sphere>
+                    <a-sphere class="cursor" radius="0.03" color="#FF0055" position="10 10 -1.5"></a-sphere>
                 </a-entity>
             </a-entity>
 
             <a-entity position="0 1 -2.5">
-                <a-torus position="-0.5 -0.5 0" radius="0.1" radius-tubular="0.03" rotation="90 0 0" color="white" opacity="0.3"></a-torus>
-                <a-box position="0.5 -0.5 0" scale="0.2 0.2 0.2" color="white" opacity="0.3"></a-box>
-
-                <a-torus class="obj-porca" position="-0.5 0.5 0" radius="0.1" radius-tubular="0.03" color="#FFD700"></a-torus>
-                <a-entity class="obj-parafuso" gltf-model="#modelo-cad" position="0.5 0.5 0" scale="1 1 1"></a-entity>
-                
-                <a-grid material="opacity: 0.15; color: #555" position="0 -0.6 0"></a-grid>
+                <a-cylinder radius="0.04" height="0.6" position="0 -0.2 0" color="#AAAAAA"></a-cylinder>
+                <a-torus position="0 -0.5 0" radius="0.1" radius-tubular="0.04" color="#AAAAAA" rotation="90 0 0"></a-torus> <a-torus class="obj-porca" radius="0.08" radius-tubular="0.03" position="-0.5 0.3 0" color="#FFD700"></a-torus>
             </a-entity>
             <a-light type="directional" position="1 2 1" intensity="1.5"></a-light>
             <a-light type="ambient" intensity="0.6"></a-light>
@@ -50,25 +41,18 @@
     <div class="viewport" style="border-right: none;">
         <video class="webcam" autoplay playsinline muted></video>
         <a-scene embedded vr-mode-ui="enabled: false">
-            <a-assets>
-                <a-asset-item id="modelo-cad-r" src="assets/20mm_hex4gon_screw_with_nut.glb"></a-asset-item>
-            </a-assets>
-
-            <a-entity id="cam-r" camera position="0.035 1.6 0" look-controls="enabled: true; magicWindowTrackingEnabled: true">
+            <a-entity id="cam-r" camera position="0.035 1.6 0" look-controls="enabled: false">
                 <a-entity position="-0.035 0 0">
                     <a-text class="action-txt" value="MAO LIVRE" position="0 0.6 -2" align="center" width="2.5" color="#FFF"></a-text>
-                    <a-sphere class="cursor" radius="0.03" color="white" position="10 10 -1.5"></a-sphere>
+                    <a-sphere class="cursor" radius="0.03" color="#FF0055" position="10 10 -1.5"></a-sphere>
                 </a-entity>
             </a-entity>
 
             <a-entity position="0 1 -2.5">
-                <a-torus position="-0.5 -0.5 0" radius="0.1" radius-tubular="0.03" rotation="90 0 0" color="white" opacity="0.3"></a-torus>
-                <a-box position="0.5 -0.5 0" scale="0.2 0.2 0.2" color="white" opacity="0.3"></a-box>
-
-                <a-torus class="obj-porca" position="-0.5 0.5 0" radius="0.1" radius-tubular="0.03" color="#FFD700"></a-torus>
-                <a-entity class="obj-parafuso" gltf-model="#modelo-cad-r" position="0.5 0.5 0" scale="1 1 1"></a-entity>
+                <a-cylinder radius="0.04" height="0.6" position="0 -0.2 0" color="#AAAAAA"></a-cylinder>
+                <a-torus position="0 -0.5 0" radius="0.1" radius-tubular="0.04" color="#AAAAAA" rotation="90 0 0"></a-torus>
                 
-                <a-grid material="opacity: 0.15; color: #555" position="0 -0.6 0"></a-grid>
+                <a-torus class="obj-porca" radius="0.08" radius-tubular="0.03" position="-0.5 0.3 0" color="#FFD700"></a-torus>
             </a-entity>
             <a-light type="directional" position="1 2 1" intensity="1.5"></a-light>
             <a-light type="ambient" intensity="0.6"></a-light>
@@ -79,26 +63,32 @@
         const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
         hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 
-        // LÓGICA ATUALIZADA PARA PORCA E PARAFUSO
-        let pieces = {
-            'porca': { curX: -0.5, curY: 0.5, curR: 0, curS: 1, targetX: -0.5, targetY: 0.5, targetR: 0, targetS: 1, homeX: -0.5, baseS: 1, snapped: false },
-            'parafuso': { curX: 0.5, curY: 0.5, curR: 0, curS: 1, targetX: 0.5, targetY: 0.5, targetR: 0, targetS: 1, homeX: 0.5, baseS: 1, snapped: false }
+        // Constantes do Parafuso Virtual
+        const PARAFUSO_X = 0;
+        const TOPO_Y = 0.15; // Altura onde a porca encaixa no topo
+        const BASE_Y = -0.4; // Altura onde a rosca acaba
+
+        let state = {
+            curX: -0.5, curY: 0.3, curRot: 0,
+            tarX: -0.5, tarY: 0.3, tarRot: 0
         };
 
-        let activePiece = null; let actionState = "LIVRE";
-        let lastPinchTime = 0; let wasPinching = false;
-        let initialHandAngle = 0; let initialObjRotation = 0;
-        let initialHandY = 0; let initialObjScale = 1;
+        let isSnapped = false;
+        let isManipulating = false;
+        let lastHandAngle = 0;
+        let lastPinchTime = 0;
+        let wasPinching = false;
 
         hands.onResults((res) => {
             if (!res.multiHandLandmarks || res.multiHandLandmarks.length === 0) {
                 document.querySelectorAll('.cursor').forEach(c => c.setAttribute('position', `10 10 -1.5`));
-                if (actionState !== "ENCAIXE") updateHUD("MAO LIVRE", "#FFF");
-                actionState = "LIVRE"; activePiece = null; wasPinching = false; return;
+                updateHUD("MAO LIVRE", "#FFF");
+                isManipulating = false; wasPinching = false; return;
             }
 
             const h = res.multiHandLandmarks[0];
-            const x = (h[8].x - 0.5) * 4; const y = (0.5 - h[8].y) * 3;
+            const x = (h[8].x - 0.5) * 4; 
+            const y = (0.5 - h[8].y) * 3;
             document.querySelectorAll('.cursor').forEach(c => c.setAttribute('position', `${x} ${y} -1.5`));
 
             const distThumbIndex = Math.hypot(h[4].x - h[8].x, h[4].y - h[8].y);
@@ -106,85 +96,78 @@
             const isPinch = distThumbIndex < 0.08 && distThumbMiddle > 0.1; 
             const isThreeFingers = distThumbIndex < 0.08 && distThumbMiddle < 0.08; 
 
-            // DUPLO CLIQUE (Reset Silencioso)
+            // DUPLO CLIQUE PARA RESETAR (Desmontar a peça)
             if (isPinch && !wasPinching) {
                 let now = Date.now();
                 if (now - lastPinchTime < 600) {
-                    resetMesa(); updateHUD("SISTEMA REINICIADO", "#FF4B4B");
+                    isSnapped = false;
+                    state.tarX = -0.5; state.tarY = 0.3; state.tarRot = 0;
+                    updateHUD("PECA DESMONTADA", "#FF4B4B");
                     lastPinchTime = 0; wasPinching = true; return; 
                 } else { lastPinchTime = now; }
             }
             wasPinching = isPinch;
 
-            if (actionState === "LIVRE" || actionState === "ENCAIXE") {
-                let closest = null; let minDist = 0.6;
-                for (const key in pieces) {
-                    if (pieces[key].snapped) continue;
-                    const d = Math.hypot(x - pieces[key].targetX, y - pieces[key].targetY);
-                    if (d < minDist) { minDist = d; closest = key; }
+            let currentHandAngle = Math.atan2(h[17].y - h[5].y, h[17].x - h[5].x);
+
+            // FASE 1: PEGAR E ENCAIXAR
+            if (!isSnapped) {
+                if (isPinch) {
+                    state.tarX = x; state.tarY = y;
+                    updateHUD("ALINHE NO TOPO", "#00AAFF");
+                    
+                    // Checa se a porca chegou no topo do parafuso
+                    if (Math.hypot(state.tarX - PARAFUSO_X, state.tarY - TOPO_Y) < 0.2) {
+                        isSnapped = true;
+                        state.tarX = PARAFUSO_X; state.tarY = TOPO_Y; state.tarRot = 0;
+                        updateHUD("TRAVADO! USE 3 DEDOS PARA GIRAR", "#32CD32");
+                    }
+                } else {
+                    updateHUD("PEGUE A PORCA (2 DEDOS)", "#FFF");
                 }
-                activePiece = closest;
-            }
+            } 
+            // FASE 2: ROSQUEAR
+            else {
+                if (isThreeFingers) {
+                    if (!isManipulating) {
+                        isManipulating = true;
+                        lastHandAngle = currentHandAngle;
+                        updateHUD("APERTANDO PARAFUSO...", "#FFD700");
+                    }
 
-            if (!activePiece) return;
-            const p = pieces[activePiece];
+                    // Calcula o giro da mão
+                    let angleDelta = currentHandAngle - lastHandAngle;
+                    if (angleDelta > Math.PI) angleDelta -= 2 * Math.PI;
+                    if (angleDelta < -Math.PI) angleDelta += 2 * Math.PI;
 
-            if (isThreeFingers) {
-                if (actionState !== "MANIPULANDO") {
-                    actionState = "MANIPULANDO";
-                    initialHandAngle = Math.atan2(h[17].y - h[5].y, h[17].x - h[5].x); initialObjRotation = p.targetR;
-                    initialHandY = h[0].y; initialObjScale = p.targetS;
+                    state.tarRot -= (angleDelta * (180 / Math.PI) * 2.0);
+                    
+                    // Desce a porca de acordo com o giro
+                    let roscaY = TOPO_Y - (state.tarRot / 360) * 0.08; 
+                    
+                    if (roscaY > TOPO_Y) { roscaY = TOPO_Y; state.tarRot = 0; }
+                    if (roscaY < BASE_Y) { roscaY = BASE_Y; updateHUD("PARAFUSO APERTADO MÁXIMO", "#32CD32");}
+                    
+                    state.tarY = roscaY;
+                    lastHandAngle = currentHandAngle;
+                } else {
+                    isManipulating = false;
+                    updateHUD("GIRE COM 3 DEDOS", "#32CD32");
                 }
-                updateHUD(`MANIPULANDO: ${activePiece.toUpperCase()}`, "#FFD700");
-                let currentHandAngle = Math.atan2(h[17].y - h[5].y, h[17].x - h[5].x);
-                p.targetR = initialObjRotation - ((currentHandAngle - initialHandAngle) * (180 / Math.PI) * 1.5);
-                
-                let scaleMultiplier = 1 + ((h[0].y - initialHandY) * -2.5); 
-                p.targetS = initialObjScale * Math.max(0.3, Math.min(10.0, scaleMultiplier));
-
-            } else if (isPinch) {
-                actionState = "MOVENDO"; updateHUD(`MOVENDO: ${activePiece.toUpperCase()}`, "#00AAFF");
-                p.targetX = x; p.targetY = y;
-            } else {
-                if (actionState === "MOVENDO") {
-                    const dTarget = Math.hypot(p.targetX - p.homeX, p.targetY - (-0.5));
-                    if (dTarget < 0.35) {
-                        p.targetX = p.homeX; p.targetY = -0.5; p.targetR = 0; p.targetS = 1; p.snapped = true;
-                        actionState = "ENCAIXE"; updateHUD("ENCAIXADO!", "#32CD32");
-                    } else { actionState = "LIVRE"; updateHUD("MAO LIVRE", "#FFF"); }
-                } else if (actionState === "MANIPULANDO") { actionState = "LIVRE"; updateHUD("MAO LIVRE", "#FFF"); }
             }
         });
 
-        function resetMesa() {
-            for (const key in pieces) {
-                pieces[key].targetX = pieces[key].homeX; pieces[key].targetY = 0.5;
-                pieces[key].targetR = 0; pieces[key].targetS = 1; pieces[key].snapped = false;
-            }
-            actionState = "LIVRE"; activePiece = null;
-        }
-
+        // LOOP DE FÍSICA SUAVE
+        const smooth = 0.15;
         function physicsLoop() {
-            const suavizacao = 0.15;
-            for (const key in pieces) {
-                const p = pieces[key];
-                p.curX += (p.targetX - p.curX) * suavizacao; p.curY += (p.targetY - p.curY) * suavizacao;
-                p.curR += (p.targetR - p.curR) * suavizacao; p.curS += (p.targetS - p.curS) * suavizacao;
+            state.curX += (state.tarX - state.curX) * smooth;
+            state.curY += (state.tarY - state.curY) * smooth;
+            state.curRot += (state.tarRot - state.curRot) * smooth;
 
-                document.querySelectorAll(`.obj-${key}`).forEach(el => {
-                    el.setAttribute('position', `${p.curX} ${p.curY} 0`);
-                    
-                    if(key === 'parafuso') {
-                        el.setAttribute('rotation', `0 ${p.curR} 0`);
-                        el.setAttribute('scale', `${p.curS} ${p.curS} ${p.curS}`);
-                    }
-                    if(key === 'porca') {
-                        el.setAttribute('rotation', `90 ${p.curR} 0`);
-                        el.setAttribute('radius', `${0.1 * p.curS}`);
-                        el.setAttribute('radius-tubular', `${0.03 * p.curS}`);
-                    }
-                });
-            }
+            document.querySelectorAll('.obj-porca').forEach(el => {
+                el.setAttribute('position', `${state.curX} ${state.curY} 0`);
+                el.setAttribute('rotation', `90 0 ${state.curRot}`); // Mantém a porca deitada
+            });
             requestAnimationFrame(physicsLoop);
         }
         physicsLoop();
@@ -192,9 +175,6 @@
         function updateHUD(txt, color) { document.querySelectorAll('.action-txt').forEach(el => { el.setAttribute('value', txt); el.setAttribute('color', color); }); }
 
         document.getElementById('start-btn').addEventListener('click', async () => {
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                try { await DeviceOrientationEvent.requestPermission(); } catch (e) { console.warn("Permissão de giroscópio negada ou ignorada."); }
-            }
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
             document.querySelectorAll('.webcam').forEach(v => { v.srcObject = stream; v.play(); });
             document.getElementById('start-btn').style.display = 'none';
