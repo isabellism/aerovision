@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>ORBITA - Mecânica de Montagem</title>
+<title>ORBITA - Montagem 7.1</title>
 
 <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
@@ -11,7 +11,17 @@
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
     body { margin: 0; overflow: hidden; background: #000; font-family: 'Share Tech Mono', monospace; user-select: none; }
-    video { display: none; }
+    
+    /* A CÂMERA VOLTOU PRO FUNDO */
+    #webcam {
+        position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+        object-fit: cover; z-index: 1; pointer-events: none;
+    }
+    
+    /* O 3D POR CIMA DA CÂMERA */
+    a-scene {
+        position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 2;
+    }
     
     #startBtn {
         position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -44,7 +54,6 @@
     }
     .val { color: #00AAFF; font-weight: bold; }
     
-    /* Botão de Reset no HUD */
     #reset-btn {
         position: absolute; bottom: 20px; right: 20px; pointer-events: auto;
         padding: 10px 20px; background: rgba(255, 0, 85, 0.2); border: 1px solid #FF0055;
@@ -100,17 +109,16 @@ const txtModo = document.getElementById("modo-txt");
 const txtRot = document.getElementById("rot-txt");
 const txtDepth = document.getElementById("depth-txt");
 
-// CONSTANTES DO PARAFUSO (Coordenadas reais do A-Frame)
 const PARAFUSO_X = 0;
-const PARAFUSO_TOPO_Y = 0.3; // Altura máxima para encaixar
-const PARAFUSO_BASE_Y = -0.4; // Fim da rosca
+const PARAFUSO_TOPO_Y = 0.3; 
+const PARAFUSO_BASE_Y = -0.4; 
 
 let state = {
     curX: -0.5, curY: 0.3, curRot: 0,
     tarX: -0.5, tarY: 0.3, tarRot: 0
 };
 
-let isSnapped = false; // Se a porca está no eixo do parafuso
+let isSnapped = false; 
 let isManipulating = false;
 let lastHandAngle = 0;
 
@@ -118,7 +126,9 @@ hands.onResults(results => {
     if (!results.multiHandLandmarks) {
         cursor.setAttribute("position", `10 10 -1.5`);
         txtModo.innerText = "STANDBY"; txtModo.style.color = "#888";
-        hudStatus.style.borderColor = "#00AAFF"; hudStatus.style.boxShadow = "0 0 5px #00AAFF";
+        if(!isSnapped) {
+            hudStatus.style.borderColor = "#00AAFF"; hudStatus.style.boxShadow = "0 0 5px #00AAFF";
+        }
         isManipulating = false;
         return;
     }
@@ -134,33 +144,25 @@ hands.onResults(results => {
     const isPinching = pinchDist < 0.08 && middleDist > 0.1; 
     const isThreeFingers = pinchDist < 0.08 && middleDist < 0.08; 
 
-    // CALCULANDO O ÂNGULO DA MÃO CONTINUAMENTE PARA ROTAÇÃO 
     let currentHandAngle = Math.atan2(hand[17].y - hand[5].y, hand[17].x - hand[5].x);
 
-    // ESTÁGIO 1: MOVER LIVREMENTE (Até encaixar)
     if (!isSnapped) {
         if (isPinching) {
             state.tarX = x; state.tarY = y;
             txtModo.innerText = "MOVENDO PORCA"; txtModo.style.color = "#FF0055";
             hudStatus.innerText = "ALINHE AO TOPO DO PARAFUSO";
             
-            // Checar se chegou perto do topo do parafuso
             const distToTop = Math.hypot(state.tarX - PARAFUSO_X, state.tarY - PARAFUSO_TOPO_Y);
             if (distToTop < 0.15) {
-                // TRAVOU NO EIXO!
                 isSnapped = true;
-                state.tarX = PARAFUSO_X;
-                state.tarY = PARAFUSO_TOPO_Y;
-                state.tarRot = 0;
+                state.tarX = PARAFUSO_X; state.tarY = PARAFUSO_TOPO_Y; state.tarRot = 0;
                 hudStatus.innerText = "EIXO ALINHADO";
                 hudStatus.style.borderColor = "#32CD32"; hudStatus.style.color = "#32CD32";
             }
         } else {
             txtModo.innerText = "AGUARDANDO AÇÃO"; txtModo.style.color = "#00AAFF";
         }
-    } 
-    // ESTÁGIO 2: ROSQUEAR (Eixo travado)
-    else {
+    } else {
         if (isThreeFingers) {
             if (!isManipulating) {
                 isManipulating = true;
@@ -170,20 +172,14 @@ hands.onResults(results => {
                 txtModo.innerText = "APLICANDO TORQUE"; txtModo.style.color = "#FFD700";
             }
 
-            // Descobrir o quanto a mão girou (Delta Angle)
             let angleDelta = currentHandAngle - lastHandAngle;
-            // Correção caso o ângulo pule de 180 para -180
             if (angleDelta > Math.PI) angleDelta -= 2 * Math.PI;
             if (angleDelta < -Math.PI) angleDelta += 2 * Math.PI;
 
-            // Aplica a rotação (Multiplicador de sensibilidade)
             state.tarRot -= (angleDelta * (180 / Math.PI) * 2.0);
             
-            // A MATEMÁTICA DO PASSO DE ROSCA: Desce o Y baseado no Giro
-            // Cada 360 graus desce 0.05 no eixo Y
             let roscaY = PARAFUSO_TOPO_Y - (state.tarRot / 360) * 0.05;
             
-            // Limita a porca para não passar do parafuso
             if (roscaY > PARAFUSO_TOPO_Y) { roscaY = PARAFUSO_TOPO_Y; state.tarRot = 0; }
             if (roscaY < PARAFUSO_BASE_Y) { roscaY = PARAFUSO_BASE_Y; }
             
@@ -192,7 +188,7 @@ hands.onResults(results => {
 
         } else {
             isManipulating = false;
-            hudStatus.innerText = "EIXO ALINHADO"; hudStatus.style.color = "#32CD32";
+            hudStatus.innerText = "EIXO ALINHADO"; hudStatus.style.color = "#32CD32"; hudStatus.style.borderColor = "#32CD32";
             txtModo.innerText = "USE 3 DEDOS PARA GIRAR"; txtModo.style.color = "#32CD32";
         }
     }
@@ -211,11 +207,9 @@ function animate() {
     state.curRot += (state.tarRot - state.curRot) * smooth;
 
     porcaObj.setAttribute("position", `${state.curX} ${state.curY} 0`);
-    porcaObj.setAttribute("rotation", `90 0 ${state.curRot}`); // Deixei 90 no X para o anel ficar deitado
+    porcaObj.setAttribute("rotation", `90 0 ${state.curRot}`); 
 
-    // Atualiza HUD
     txtRot.innerText = Math.abs(state.curRot).toFixed(1) + "°";
-    // Calcula profundidade em milímetros fictícios (De 0 a 100mm)
     let percentual = (PARAFUSO_TOPO_Y - state.curY) / (PARAFUSO_TOPO_Y - PARAFUSO_BASE_Y);
     txtDepth.innerText = (percentual * 100).toFixed(1) + " mm";
 
